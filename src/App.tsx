@@ -18,6 +18,7 @@ import ClipDetail from './pages/ClipDetail';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import SuccessPage from './pages/SuccessPage';
+import Notifications from './pages/Notifications';
 import TelegramButton from './components/TelegramButton';
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
           
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/notifications" element={<Notifications />} />
         </Route>
 
         {/* Catch-all - Redirect to Landing */}

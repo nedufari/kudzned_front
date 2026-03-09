@@ -5,8 +5,11 @@ import {
   CheckCircle2, 
   Clock, 
   XCircle,
-  ArrowRight
+  ArrowRight,
+  Calendar,
+  Hash
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Orders: React.FC = () => {
   const navigate = useNavigate();
@@ -30,20 +33,19 @@ const Orders: React.FC = () => {
 
   return (
      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'end', gap: '16px' }}>
         <div>
           <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>Purchase History</h3>
           <p style={{ color: '#a0a0b8', fontSize: '15px' }}>Track your orders, view credentials, and check transaction status.</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 20px', borderRadius: '12px', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Download size={18} />
-            Export CSV
-          </button>
-        </div>
+        <button style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 20px', borderRadius: '12px', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Download size={18} />
+          <span className="hidden sm:inline">Export CSV</span>
+        </button>
       </div>
 
-      <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', overflow: 'hidden' }}>
+      {/* Desktop Table View */}
+      <div className="hidden lg:block" style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', backgroundColor: 'rgba(255,255,255,0.02)' }}>
@@ -75,7 +77,7 @@ const Orders: React.FC = () => {
                 </td>
                 <td style={{ padding: '20px 24px' }}>
                    <button style={{ backgroundColor: 'rgba(0, 242, 255, 0.05)', color: '#00f2ff', padding: '8px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: '800', border: '1px solid rgba(0, 242, 255, 0.1)', display: 'flex', alignItems: 'center', gap: '6px' }} className="group-hover:bg-[#00f2ff] group-hover:text-black transition-all">
-                      View One
+                      View
                       <ArrowRight size={14} />
                    </button>
                 </td>
@@ -83,6 +85,100 @@ const Orders: React.FC = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {orders.map((order, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            onClick={() => navigate(`/orders/${order.id}`)}
+            style={{
+              backgroundColor: '#0d0d12',
+              border: '1px solid rgba(255,255,255,0.05)',
+              borderRadius: '20px',
+              padding: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
+            }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '12px' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#6b6b7d', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  <Hash size={12} />
+                  Transaction ID
+                </div>
+                <p style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'monospace', color: '#a0a0b8', wordBreak: 'break-all' }}>
+                  {order.id}
+                </p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: order.color, fontSize: '12px', fontWeight: '900', backgroundColor: `${order.color}15`, padding: '6px 12px', borderRadius: '10px', whiteSpace: 'nowrap' }}>
+                {getStatusIcon(order.status)}
+                {order.status}
+              </div>
+            </div>
+
+            {/* Product Name */}
+            <div>
+              <div style={{ color: '#6b6b7d', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>
+                Product
+              </div>
+              <h4 style={{ fontSize: '16px', fontWeight: '800', lineHeight: '1.3' }}>
+                {order.item}
+              </h4>
+            </div>
+
+            {/* Date & Amount */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#6b6b7d', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  <Calendar size={12} />
+                  Date
+                </div>
+                <p style={{ fontSize: '14px', fontWeight: '600', color: '#a0a0b8' }}>
+                  {order.date}
+                </p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ color: '#6b6b7d', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  Amount
+                </div>
+                <p style={{ fontSize: '18px', fontWeight: '900', color: '#10b981' }}>
+                  {order.amount}
+                </p>
+              </div>
+            </div>
+
+            {/* View Button */}
+            <button 
+              style={{ 
+                width: '100%',
+                backgroundColor: 'rgba(0, 242, 255, 0.05)', 
+                color: '#00f2ff', 
+                padding: '12px', 
+                borderRadius: '12px', 
+                fontSize: '14px', 
+                fontWeight: '800', 
+                border: '1px solid rgba(0, 242, 255, 0.1)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                gap: '8px',
+                marginTop: '4px'
+              }}
+            >
+              View Details
+              <ArrowRight size={16} />
+            </button>
+          </motion.div>
+        ))}
       </div>
     </div>
   );

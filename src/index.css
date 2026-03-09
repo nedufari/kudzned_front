@@ -65,11 +65,52 @@ h1, h2, h3, h4, h5, h6 {
 /* Responsive Utilities */
 .hidden { display: none !important; }
 
+@media (min-width: 640px) {
+  .sm\:inline { display: inline !important; }
+  .sm\:block { display: block !important; }
+  .sm\:flex { display: flex !important; }
+  .sm\:flex-row { flex-direction: row !important; }
+  .sm\:justify-between { justify-content: space-between !important; }
+  .sm\:text-right { text-align: right !important; }
+  .sm\:text-xs { font-size: 12px !important; }
+  .sm\:text-sm { font-size: 14px !important; }
+  .sm\:text-base { font-size: 16px !important; }
+  .sm\:text-lg { font-size: 18px !important; }
+  .sm\:text-xl { font-size: 20px !important; }
+  .sm\:text-2xl { font-size: 24px !important; }
+  .sm\:p-4 { padding: 16px !important; }
+  .sm\:p-6 { padding: 24px !important; }
+  .sm\:p-10 { padding: 40px !important; }
+  .sm\:py-10 { padding-top: 40px !important; padding-bottom: 40px !important; }
+  .sm\:gap-3 { gap: 12px !important; }
+  .sm\:gap-4 { gap: 16px !important; }
+  .sm\:gap-6 { gap: 24px !important; }
+  .sm\:gap-8 { gap: 32px !important; }
+  .sm\:mb-4 { margin-bottom: 16px !important; }
+  .sm\:mb-5 { margin-bottom: 20px !important; }
+  .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .sm\:w-5 { width: 20px !important; }
+  .sm\:h-5 { height: 20px !important; }
+  .sm\:w-6 { width: 24px !important; }
+  .sm\:h-6 { height: 24px !important; }
+  .sm\:w-8 { width: 32px !important; }
+  .sm\:h-8 { height: 32px !important; }
+  .sm\:w-10 { width: 40px !important; }
+  .sm\:h-10 { height: 40px !important; }
+  .sm\:w-\[180px\] { width: 180px !important; }
+  .sm\:h-\[180px\] { height: 180px !important; }
+}
+
 @media (min-width: 1025px) {
   .lg-flex { display: flex !important; }
   .lg-grid { display: grid !important; }
   .lg-block { display: block !important; }
   .lg-hidden { display: none !important; }
+  .lg\:block { display: block !important; }
+  .lg\:hidden { display: none !important; }
+  .lg\:grid-cols-\[1\.3fr_0\.7fr\] { grid-template-columns: 1.3fr 0.7fr !important; }
+  .lg\:grid-cols-\[1\.5fr_1fr\] { grid-template-columns: 1.5fr 1fr !important; }
+  .lg\:gap-8 { gap: 32px !important; }
 }
 
 /* Auth Pages Spacing */
