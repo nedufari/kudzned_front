@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  PlusCircle, 
   Copy, 
   CheckCircle2, 
   Info,
@@ -41,7 +40,6 @@ const CryptoOption = ({ name, symbol, icon: Icon, active, onClick }: any) => (
 
 const Topup: React.FC = () => {
   const [method, setMethod] = useState('btc');
-  const [amount, setAmount] = useState('');
   const [copied, setCopied] = useState(false);
 
   const address = method === 'btc' 
@@ -157,15 +155,15 @@ const Topup: React.FC = () => {
           </h3>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <li style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'rgba(0,242,255,0.1)', color: '#00f2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', shrink: 0 }}>1</div>
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'rgba(0,242,255,0.1)', color: '#00f2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}>1</div>
               <p style={{ fontSize: '13px', color: '#a0a0b8' }}>Select your preferred cryptocurrency.</p>
             </li>
             <li style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'rgba(0,242,255,0.1)', color: '#00f2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', shrink: 0 }}>2</div>
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'rgba(0,242,255,0.1)', color: '#00f2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}>2</div>
               <p style={{ fontSize: '13px', color: '#a0a0b8' }}>Send any amount to the generated address.</p>
             </li>
             <li style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'rgba(0,242,255,0.1)', color: '#00f2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', shrink: 0 }}>3</div>
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'rgba(0,242,255,0.1)', color: '#00f2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}>3</div>
               <p style={{ fontSize: '13px', color: '#a0a0b8' }}>Credits will be added automatically to your wallet after 1 confirmation.</p>
             </li>
           </ul>

@@ -4,21 +4,18 @@ import {
   Mail, 
   Wallet, 
   ShieldCheck, 
-  Bell, 
   Lock, 
   Camera, 
   CheckCircle2, 
   ChevronRight,
-  ExternalLink,
   Save,
   Trash2
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const Profile: React.FC = () => {
   const [name, setName] = useState('Nedu Franco');
-  const [email, setEmail] = useState('nedufranco@gmail.com');
   const [address, setAddress] = useState('bc1qxy2kg2ryyxpx4lhuv067z8483m3m3j');
+  const email = 'nedufranco@gmail.com';
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.2fr)', gap: '40px', alignItems: 'start' }}>

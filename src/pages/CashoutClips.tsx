@@ -5,8 +5,6 @@ import {
   Video, 
   Calendar, 
   Eye, 
-  Share2, 
-  TrendingUp,
   DollarSign,
   ChevronRight
 } from 'lucide-react';

@@ -4,14 +4,11 @@ import {
   ArrowLeft, 
   ShieldCheck, 
   Star, 
-  MessageSquare, 
-  CheckCircle2, 
   Calendar,
   User,
   ExternalLink,
   ThumbsUp
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const VouchDetail: React.FC = () => {
   const { id } = useParams();

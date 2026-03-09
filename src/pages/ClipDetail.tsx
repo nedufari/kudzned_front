@@ -9,11 +9,9 @@ import {
   Share2, 
   DollarSign, 
   ExternalLink,
-  MessageSquare,
   TrendingUp,
   Video
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const ClipDetail: React.FC = () => {
   const { id } = useParams();

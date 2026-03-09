@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  CreditCard, 
-  ArrowRight, 
-  Banknote, 
   ShieldCheck, 
   Globe, 
   AlertTriangle,

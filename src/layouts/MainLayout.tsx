@@ -42,22 +42,90 @@ const SidebarLink = ({ to, icon: Icon, label, badge, onClick }: { to: string, ic
     <Icon size={20} className="group-hover:scale-110 transition-transform shrink-0" />
     <span className="font-semibold flex-1 text-[15px] tracking-tight">{label}</span>
     {badge ? (
-      <motion.span 
-        animate={badge === 'NEW' ? {
-          boxShadow: ['0 0 0px #ff00f2', '0 0 10px #ff00f2', '0 0 0px #ff00f2'],
-          scale: [1, 1.05, 1]
-        } : {
-          scale: [1, 1.1, 1]
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-        className={`${badge === 'NEW' ? 'bg-[#ff00f2]' : 'bg-[#00f2ff] !text-black'} text-white text-[10px] px-2 py-0.5 rounded-full font-black tracking-wider shadow-lg`}
-      >
-        {badge}
-      </motion.span>
+      badge === 'NEW' ? (
+        <motion.span 
+          animate={{
+            boxShadow: ['0 0 0px #ff00f2', '0 0 10px #ff00f2', '0 0 0px #ff00f2'],
+            scale: [1, 1.05, 1]
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="bg-[#ff00f2] text-white text-[10px] px-2 py-0.5 rounded-full font-black tracking-wider shadow-lg"
+        >
+          {badge}
+        </motion.span>
+      ) : (
+        <motion.div
+          animate={{
+            scale: [1, 1.15, 1],
+            rotate: [0, -10, 10, -10, 0]
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+            times: [0, 0.2, 0.4, 0.6, 1]
+          }}
+          style={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <motion.div
+            animate={{
+              boxShadow: [
+                '0 0 0px rgba(0, 242, 255, 0)',
+                '0 0 15px rgba(0, 242, 255, 0.6)',
+                '0 0 0px rgba(0, 242, 255, 0)'
+              ]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            style={{
+              position: 'absolute',
+              inset: -4,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(0, 242, 255, 0.3) 0%, transparent 70%)',
+              filter: 'blur(4px)'
+            }}
+          />
+          <motion.span 
+            animate={{
+              backgroundColor: ['#00f2ff', '#00d4ff', '#00f2ff']
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            style={{
+              position: 'relative',
+              backgroundColor: '#00f2ff',
+              color: '#000',
+              fontSize: '11px',
+              fontWeight: '900',
+              width: '22px',
+              height: '22px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '2px solid rgba(0, 242, 255, 0.3)',
+              boxShadow: '0 0 10px rgba(0, 242, 255, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.3)'
+            }}
+          >
+            {badge}
+          </motion.span>
+        </motion.div>
+      )
     ) : (
       <ChevronRight size={14} className="opacity-0 group-hover:opacity-40 transition-opacity" />
     )}
@@ -172,16 +240,77 @@ const MainLayout: React.FC = () => {
               </div>
             </div>
             
-            <div 
+            <motion.div 
               onClick={() => navigate('/cart')}
               style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '16px', backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
               className="hover:border-[#00f2ff]"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               <ShoppingCart size={22} color="#a0a0b8" />
-              <div style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#ff00f2', color: 'white', fontSize: '10px', fontWeight: '900', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #050505' }}>
-                 2
-              </div>
-            </div>
+              <motion.div
+                animate={{
+                  scale: [1, 1.2, 1],
+                  rotate: [0, -15, 15, -15, 0]
+                }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  times: [0, 0.2, 0.4, 0.6, 1]
+                }}
+                style={{ position: 'absolute', top: -6, right: -6 }}
+              >
+                <motion.div
+                  animate={{
+                    boxShadow: [
+                      '0 0 0px rgba(255, 0, 242, 0)',
+                      '0 0 20px rgba(255, 0, 242, 0.8)',
+                      '0 0 0px rgba(255, 0, 242, 0)'
+                    ]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  style={{
+                    position: 'absolute',
+                    inset: -6,
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(255, 0, 242, 0.4) 0%, transparent 70%)',
+                    filter: 'blur(6px)'
+                  }}
+                />
+                <motion.div 
+                  animate={{
+                    backgroundColor: ['#ff00f2', '#ff33f5', '#ff00f2']
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  style={{ 
+                    position: 'relative',
+                    backgroundColor: '#ff00f2', 
+                    color: 'white', 
+                    fontSize: '11px', 
+                    fontWeight: '900', 
+                    width: '24px', 
+                    height: '24px', 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    border: '3px solid #050505',
+                    boxShadow: '0 0 15px rgba(255, 0, 242, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.3)'
+                  }}
+                >
+                  2
+                </motion.div>
+              </motion.div>
+            </motion.div>
 
             <div style={{ width: '48px', height: '48px', borderRadius: '16px', border: '2px solid rgba(0,242,255,0.3)', padding: '2px', cursor: 'pointer', transition: 'all 0.2s' }} className="hover:border-[#00f2ff]">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Nedu" alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '12px' }} />

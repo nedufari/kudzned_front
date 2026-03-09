@@ -16,10 +16,18 @@ import { motion } from 'framer-motion';
 
 const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: any) => (
   <motion.div 
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 40 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ delay }}
+    viewport={{ once: true, margin: "-100px" }}
+    transition={{ 
+      delay, 
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1]
+    }}
+    whileHover={{ 
+      y: -8,
+      transition: { duration: 0.3 }
+    }}
     style={{ 
       backgroundColor: '#0d0d12', 
       border: '1px solid rgba(255,255,255,0.05)', 
@@ -27,13 +35,32 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: any) => (
       padding: '32px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '16px'
+      gap: '16px',
+      position: 'relative',
+      overflow: 'hidden'
     }}
     className="hover:border-[rgba(0,242,255,0.3)] transition-colors group"
   >
-    <div style={{ backgroundColor: 'rgba(0,242,255,0.05)', padding: '12px', borderRadius: '12px', color: '#00f2ff', width: 'fit-content' }}>
+    <motion.div 
+      style={{ 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '1px',
+        background: 'linear-gradient(90deg, transparent, rgba(0,242,255,0.5), transparent)',
+        opacity: 0
+      }}
+      whileHover={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    />
+    <motion.div 
+      style={{ backgroundColor: 'rgba(0,242,255,0.05)', padding: '12px', borderRadius: '12px', color: '#00f2ff', width: 'fit-content' }}
+      whileHover={{ scale: 1.1, rotate: 5 }}
+      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+    >
       <Icon size={24} />
-    </div>
+    </motion.div>
     <h4 style={{ fontSize: '20px', fontWeight: '800' }}>{title}</h4>
     <p style={{ color: '#a0a0b8', fontSize: '15px', lineHeight: '1.6' }}>{description}</p>
   </motion.div>
@@ -42,30 +69,41 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: any) => (
 const Navbar = () => {
   const navigate = useNavigate();
   return (
-    <nav style={{ 
-      position: 'fixed', 
-      top: 0, 
-      left: 0, 
-      right: 0, 
-      height: '80px', 
-      borderBottom: '1px solid rgba(255,255,255,0.05)', 
-      backgroundColor: 'rgba(5, 5, 5, 0.8)', 
-      backdropFilter: 'blur(10px)', 
-      zIndex: 1000, 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center' 
-    }}>
+    <motion.nav 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        height: '80px', 
+        borderBottom: '1px solid rgba(255,255,255,0.05)', 
+        backgroundColor: 'rgba(5, 5, 5, 0.8)', 
+        backdropFilter: 'blur(10px)', 
+        zIndex: 1000, 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center' 
+      }}
+    >
       <div style={{ width: '100%', maxWidth: '1280px', padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div 
+        <motion.div 
           onClick={() => navigate('/')}
           style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #00f2ff, #ff00f2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <motion.div 
+            style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #00f2ff, #ff00f2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          >
             <span style={{ color: 'white', fontWeight: 'bold', fontSize: '16px' }}>K</span>
-          </div>
+          </motion.div>
           <span style={{ fontWeight: '900', fontSize: '18px', letterSpacing: '1px' }}>KUDZNED</span>
-        </div>
+        </motion.div>
         
         <div style={{ display: 'none' }} className="lg-flex gap-8 items-center">
            {['Market', 'Transfers', 'Logs', 'Proof'].map(link => (
@@ -74,21 +112,25 @@ const Navbar = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button 
+          <motion.button 
             onClick={() => navigate('/login')}
             style={{ fontSize: '14px', fontWeight: '700', color: 'white', padding: '10px 20px' }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             Login
-          </button>
-          <button 
+          </motion.button>
+          <motion.button 
             onClick={() => navigate('/login')}
             style={{ backgroundColor: '#00f2ff', color: '#000', padding: '10px 24px', borderRadius: '12px', fontWeight: '800', fontSize: '14px' }}
+            whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 242, 255, 0.4)' }}
+            whileTap={{ scale: 0.95 }}
           >
             Get Started
-          </button>
+          </motion.button>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 };
 
@@ -98,23 +140,70 @@ const Footer = () => {
     <footer style={{ backgroundColor: '#050505', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '80px 24px 40px 24px' }}>
     <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
       {/* Ready to start CTA */}
-      <div style={{ 
-        backgroundColor: '#0d0d12', 
-        border: '1px solid rgba(0, 242, 255, 0.1)', 
-        borderRadius: '32px', 
-        padding: '60px 40px', 
-        marginBottom: '80px',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.5), transparent)' }} />
-        <h2 style={{ fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: '800', marginBottom: '20px' }}>Ready to Scale Your Wealth?</h2>
-        <p style={{ color: '#a0a0b8', fontSize: '18px', maxWidth: '600px', margin: '0 auto 32px auto' }}>Join 10,000+ investors already benefiting from the KUDZNED marketplace.</p>
-        <button style={{ backgroundColor: '#00f2ff', color: '#000', padding: '16px 40px', borderRadius: '16px', fontWeight: '900', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '12px', margin: '0 auto' }}>
-          Create Free Account <ArrowRight size={20} />
-        </button>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        style={{ 
+          backgroundColor: '#0d0d12', 
+          border: '1px solid rgba(0, 242, 255, 0.1)', 
+          borderRadius: '32px', 
+          padding: '60px 40px', 
+          marginBottom: '80px',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <motion.div 
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.5), transparent)' }}
+          animate={{ 
+            backgroundPosition: ['0% 0%', '100% 0%'],
+            opacity: [0.5, 1, 0.5]
+          }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+        />
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          style={{ fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: '800', marginBottom: '20px' }}
+        >
+          Ready to Scale Your Wealth?
+        </motion.h2>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          style={{ color: '#a0a0b8', fontSize: '18px', maxWidth: '600px', margin: '0 auto 32px auto' }}
+        >
+          Join 10,000+ investors already benefiting from the KUDZNED marketplace.
+        </motion.p>
+        <motion.button 
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+          whileHover={{ 
+            scale: 1.05,
+            boxShadow: '0 0 60px rgba(0, 242, 255, 0.4)',
+            transition: { duration: 0.2 }
+          }}
+          whileTap={{ scale: 0.95 }}
+          style={{ backgroundColor: '#00f2ff', color: '#000', padding: '16px 40px', borderRadius: '16px', fontWeight: '900', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '12px', margin: '0 auto' }}
+        >
+          Create Free Account 
+          <motion.div
+            animate={{ x: [0, 5, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ArrowRight size={20} />
+          </motion.div>
+        </motion.button>
+      </motion.div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '48px', marginBottom: '64px' }}>
         <div style={{ gridColumn: 'span 2' }}>
@@ -217,93 +306,216 @@ const Landing = () => {
         textAlign: 'center',
         overflow: 'hidden'
       }}>
-        {/* Background Blur */}
-        <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '800px', height: '600px', background: 'radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 70%)', filter: 'blur(100px)', zIndex: 0 }} />
+        {/* Animated Background Blurs */}
+        <motion.div 
+          style={{ position: 'absolute', top: '10%', left: '50%', width: '800px', height: '600px', background: 'radial-gradient(circle, rgba(0, 242, 255, 0.15) 0%, transparent 70%)', filter: 'blur(100px)', zIndex: 0 }}
+          animate={{ 
+            x: ['-50%', '-45%', '-50%'],
+            y: [0, 20, 0],
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div 
+          style={{ position: 'absolute', top: '30%', right: '10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(255, 0, 242, 0.1) 0%, transparent 70%)', filter: 'blur(100px)', zIndex: 0 }}
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
         
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           style={{ position: 'relative', zIndex: 1, maxWidth: '900px' }}
         >
-          <div style={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '8px', 
-            backgroundColor: 'rgba(0, 242, 255, 0.05)', 
-            border: '1px solid rgba(0, 242, 255, 0.1)', 
-            padding: '8px 16px', 
-            borderRadius: '100px', 
-            color: '#00f2ff', 
-            fontSize: '13px', 
-            fontWeight: '800', 
-            marginBottom: '32px' 
-          }}>
-            <Zap size={14} fill="currentColor" />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              backgroundColor: 'rgba(0, 242, 255, 0.05)', 
+              border: '1px solid rgba(0, 242, 255, 0.1)', 
+              padding: '8px 16px', 
+              borderRadius: '100px', 
+              color: '#00f2ff', 
+              fontSize: '13px', 
+              fontWeight: '800', 
+              marginBottom: '32px' 
+            }}
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            >
+              <Zap size={14} fill="currentColor" />
+            </motion.div>
             V3.0 MARKETPLACE IS NOW LIVE
-          </div>
+          </motion.div>
 
-          <h1 style={{ 
-            fontSize: 'clamp(48px, 8vw, 92px)', 
-             fontWeight: '900', 
-             letterSpacing: '-0.04em', 
-             lineHeight: 0.95, 
-             marginBottom: '32px',
-             background: 'linear-gradient(to bottom, #fff 40%, #a0a0b8 100%)',
-             WebkitBackgroundClip: 'text',
-             WebkitTextFillColor: 'transparent'
-          }}>
-            Premium Assets for the <span style={{ color: '#00f2ff' }}>Elite.</span>
-          </h1>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            style={{ 
+              fontSize: 'clamp(48px, 8vw, 92px)', 
+              fontWeight: '900', 
+              letterSpacing: '-0.04em', 
+              lineHeight: 0.95, 
+              marginBottom: '32px',
+              background: 'linear-gradient(to bottom, #fff 40%, #a0a0b8 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
+            Premium Assets for the{' '}
+            <motion.span 
+              style={{ color: '#00f2ff', display: 'inline-block' }}
+              animate={{ 
+                textShadow: [
+                  '0 0 20px rgba(0, 242, 255, 0.3)',
+                  '0 0 40px rgba(0, 242, 255, 0.5)',
+                  '0 0 20px rgba(0, 242, 255, 0.3)'
+                ]
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              Elite.
+            </motion.span>
+          </motion.h1>
 
-          <p style={{ 
-            fontSize: 'clamp(18px, 3vw, 22px)', 
-            color: '#a0a0b8', 
-            lineHeight: 1.5, 
-            maxWidth: '700px', 
-            margin: '0 auto 48px auto' 
-          }}>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            style={{ 
+              fontSize: 'clamp(18px, 3vw, 22px)', 
+              color: '#a0a0b8', 
+              lineHeight: 1.5, 
+              maxWidth: '700px', 
+              margin: '0 auto 48px auto' 
+            }}
+          >
             Experience the next generation of digital trading. Access high-balance logs, secure wires, and global assets delivered instantly.
-          </p>
+          </motion.p>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
-            <button 
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.8 }}
+            style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}
+          >
+            <motion.button 
               onClick={() => navigate('/login')}
               style={{ padding: '18px 48px', borderRadius: '18px', backgroundColor: '#00f2ff', color: '#000', fontWeight: '900', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 0 40px rgba(0, 242, 255, 0.2)' }}
+              whileHover={{ 
+                scale: 1.05, 
+                boxShadow: '0 0 60px rgba(0, 242, 255, 0.4)',
+                transition: { duration: 0.2 }
+              }}
+              whileTap={{ scale: 0.95 }}
             >
-              Enter Marketplace <ArrowRight size={20} />
-            </button>
-            <button style={{ padding: '18px 48px', borderRadius: '18px', backgroundColor: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: '800', fontSize: '18px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              Enter Marketplace 
+              <motion.div
+                animate={{ x: [0, 5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <ArrowRight size={20} />
+              </motion.div>
+            </motion.button>
+            <motion.button 
+              style={{ padding: '18px 48px', borderRadius: '18px', backgroundColor: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: '800', fontSize: '18px', border: '1px solid rgba(255,255,255,0.1)' }}
+              whileHover={{ 
+                scale: 1.05,
+                backgroundColor: 'rgba(255,255,255,0.08)',
+                borderColor: 'rgba(255,255,255,0.2)',
+                transition: { duration: 0.2 }
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
               View Vouches
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         </motion.div>
       </section>
 
       {/* Trust Stats */}
       <section style={{ padding: '0 24px 100px 24px' }}>
          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '2px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '2px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}
+            >
                {[
                  { label: 'Total Volume', value: '$84M+', icon: CreditCard },
                  { label: 'Active Users', value: '12.4K', icon: Users },
                  { label: 'Asset Delivery', value: 'Instantly', icon: Zap },
                  { label: 'Support Speed', value: '<5 Min', icon: MessageSquare }
                ].map((stat, i) => (
-                 <div key={i} style={{ backgroundColor: '#0d0d12', padding: '40px', textAlign: 'center' }}>
+                 <motion.div 
+                   key={i} 
+                   style={{ backgroundColor: '#0d0d12', padding: '40px', textAlign: 'center' }}
+                   initial={{ opacity: 0, scale: 0.9 }}
+                   whileInView={{ opacity: 1, scale: 1 }}
+                   viewport={{ once: true }}
+                   transition={{ delay: i * 0.1, duration: 0.5 }}
+                   whileHover={{ 
+                     backgroundColor: '#16161e',
+                     transition: { duration: 0.2 }
+                   }}
+                 >
                     <p style={{ color: '#6b6b7d', fontSize: '14px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>{stat.label}</p>
-                    <h3 style={{ fontSize: '42px', fontWeight: '900', color: i === 2 ? '#00f2ff' : 'white' }}>{stat.value}</h3>
-                 </div>
+                    <motion.h3 
+                      style={{ fontSize: '42px', fontWeight: '900', color: i === 2 ? '#00f2ff' : 'white' }}
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1 + 0.2, duration: 0.5 }}
+                    >
+                      {stat.value}
+                    </motion.h3>
+                 </motion.div>
                ))}
-            </div>
+            </motion.div>
          </div>
       </section>
 
       {/* Features */}
       <section style={{ padding: '100px 24px', maxWidth: '1280px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'left', marginBottom: '64px' }}>
-           <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: '900', marginBottom: '16px' }}>Built for Privacy. <br/>Optimized for <span style={{ color: '#ff00f2' }}>Profit.</span></h2>
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          style={{ textAlign: 'left', marginBottom: '64px' }}
+        >
+           <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: '900', marginBottom: '16px' }}>
+             Built for Privacy. <br/>
+             Optimized for{' '}
+             <motion.span 
+               style={{ color: '#ff00f2', display: 'inline-block' }}
+               animate={{ 
+                 textShadow: [
+                   '0 0 20px rgba(255, 0, 242, 0.3)',
+                   '0 0 40px rgba(255, 0, 242, 0.5)',
+                   '0 0 20px rgba(255, 0, 242, 0.3)'
+                 ]
+               }}
+               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+             >
+               Profit.
+             </motion.span>
+           </h2>
            <p style={{ color: '#a0a0b8', fontSize: '18px', maxWidth: '600px' }}>Our infrastructure ensures every transaction is anonymous while maximizing your trading success.</p>
-        </div>
+        </motion.div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
           <FeatureCard 
@@ -329,17 +541,30 @@ const Landing = () => {
 
       {/* Preview Section */}
       <section style={{ padding: '100px 24px', maxWidth: '1280px', margin: '0 auto' }}>
-         <div style={{ 
-           backgroundColor: '#0d0d12', 
-           borderRadius: '40px', 
-           border: '1px solid rgba(255,255,255,0.05)', 
-           padding: '80px 40px',
-           display: 'grid',
-           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-           gap: '64px',
-           alignItems: 'center'
-         }}>
-            <div>
+         <motion.div 
+           initial={{ opacity: 0, y: 60 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           viewport={{ once: true, margin: "-100px" }}
+           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+           style={{ 
+             backgroundColor: '#0d0d12', 
+             borderRadius: '40px', 
+             border: '1px solid rgba(255,255,255,0.05)', 
+             padding: '80px 40px',
+             display: 'grid',
+             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+             gap: '64px',
+             alignItems: 'center',
+             position: 'relative',
+             overflow: 'hidden'
+           }}
+         >
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+            >
               <h2 style={{ fontSize: '42px', fontWeight: '800', marginBottom: '24px' }}>The KUDZNED Experience</h2>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {[
@@ -347,44 +572,101 @@ const Landing = () => {
                   { title: 'Crypto Friendly', desc: 'Deposit funds using BTC, ETH, LTC or SOL instantly.' },
                   { title: 'Zero Fees', desc: 'We don\'t charge any maintenance fees for active accounts.' }
                 ].map((item, i) => (
-                  <li key={i} style={{ display: 'flex', gap: '16px' }}>
-                    <div style={{ marginTop: '4px', width: '24px', height: '24px', borderRadius: '50%', border: '2px solid #00f2ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <motion.li 
+                    key={i} 
+                    style={{ display: 'flex', gap: '16px' }}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 + i * 0.1, duration: 0.6 }}
+                  >
+                    <motion.div 
+                      style={{ marginTop: '4px', width: '24px', height: '24px', borderRadius: '50%', border: '2px solid #00f2ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      whileHover={{ scale: 1.2, rotate: 90 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
                        <ChevronRight size={14} color="#00f2ff" />
-                    </div>
+                    </motion.div>
                     <div>
                       <p style={{ fontWeight: '800', fontSize: '18px' }}>{item.title}</p>
                       <p style={{ color: '#a0a0b8', fontSize: '15px' }}>{item.desc}</p>
                     </div>
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
 
-            <div style={{ position: 'relative' }}>
-              <div style={{ 
-                backgroundColor: '#16161e', 
-                borderRadius: '24px', 
-                border: '1px solid rgba(255,255,255,0.1)', 
-                aspectRatio: '16/10', 
-                padding: '24px',
-                boxShadow: '0 40px 100px rgba(0,0,0,0.8)'
-              }}>
-                 {/* Mock UI */}
+            <motion.div 
+              style={{ position: 'relative' }}
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+            >
+              <motion.div 
+                style={{ 
+                  backgroundColor: '#16161e', 
+                  borderRadius: '24px', 
+                  border: '1px solid rgba(255,255,255,0.1)', 
+                  aspectRatio: '16/10', 
+                  padding: '24px',
+                  boxShadow: '0 40px 100px rgba(0,0,0,0.8)'
+                }}
+                whileHover={{ 
+                  y: -10,
+                  boxShadow: '0 50px 120px rgba(0,0,0,0.9)',
+                  transition: { duration: 0.3 }
+                }}
+              >
+                 {/* Mock UI with animations */}
                  <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-                    <div style={{ width: '40px', height: '8px', borderRadius: '10px', backgroundColor: '#00f2ff' }} />
-                    <div style={{ width: '20px', height: '8px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
-                    <div style={{ width: '20px', height: '8px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
+                    <motion.div 
+                      style={{ width: '40px', height: '8px', borderRadius: '10px', backgroundColor: '#00f2ff' }}
+                      animate={{ opacity: [1, 0.5, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    <motion.div 
+                      style={{ width: '20px', height: '8px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.1)' }}
+                      whileHover={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                    />
+                    <motion.div 
+                      style={{ width: '20px', height: '8px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.1)' }}
+                      whileHover={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                    />
                  </div>
-                 <div style={{ height: '20px', width: '60%', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginBottom: '12px' }} />
-                 <div style={{ height: '32px', width: '40%', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginBottom: '32px' }} />
+                 <motion.div 
+                   style={{ height: '20px', width: '60%', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginBottom: '12px' }}
+                   animate={{ width: ['60%', '70%', '60%'] }}
+                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                 />
+                 <motion.div 
+                   style={{ height: '32px', width: '40%', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginBottom: '32px' }}
+                   animate={{ opacity: [0.5, 1, 0.5] }}
+                   transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                 />
                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div style={{ height: '100px', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '12px' }} />
-                    <div style={{ height: '100px', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '12px' }} />
+                    <motion.div 
+                      style={{ height: '100px', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}
+                      whileHover={{ backgroundColor: 'rgba(255,255,255,0.06)', scale: 1.02 }}
+                      transition={{ duration: 0.2 }}
+                    />
+                    <motion.div 
+                      style={{ height: '100px', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}
+                      whileHover={{ backgroundColor: 'rgba(255,255,255,0.06)', scale: 1.02 }}
+                      transition={{ duration: 0.2 }}
+                    />
                  </div>
-              </div>
-              <div style={{ position: 'absolute', bottom: '-40px', right: '-40px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(255, 0, 242, 0.1) 0%, transparent 70%)', filter: 'blur(50px)', zIndex: -1 }} />
-            </div>
-         </div>
+              </motion.div>
+              <motion.div 
+                style={{ position: 'absolute', bottom: '-40px', right: '-40px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(255, 0, 242, 0.15) 0%, transparent 70%)', filter: 'blur(50px)', zIndex: -1 }}
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.3, 0.6, 0.3]
+                }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </motion.div>
+         </motion.div>
       </section>
 
       <Footer />

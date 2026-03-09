@@ -2,18 +2,12 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
-  ShieldCheck, 
-  History, 
   Zap, 
   CheckCircle2, 
-  Settings, 
-  MessageSquare, 
   ExternalLink,
-  CreditCard,
   Download,
   AlertTriangle
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const OrderDetail: React.FC = () => {
   const { id } = useParams();

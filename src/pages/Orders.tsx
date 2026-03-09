@@ -1,18 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Search, 
-  History, 
   Download, 
-  ExternalLink, 
   CheckCircle2, 
   Clock, 
   XCircle,
-  TrendingUp,
-  CreditCard,
   ArrowRight
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const Orders: React.FC = () => {
   const navigate = useNavigate();

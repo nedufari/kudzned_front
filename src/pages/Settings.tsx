@@ -1,20 +1,15 @@
 import React, { useState } from 'react';
 import { 
-  Bell, 
   Lock, 
   Eye, 
   Shield, 
   Smartphone, 
-  Globe, 
-  Moon, 
-  Sun,
   Layout,
   MousePointer2,
   ChevronRight,
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const SettingToggle = ({ icon: Icon, label, description, checked, onChange }: any) => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px', backgroundColor: '#16161e', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px' }}>
