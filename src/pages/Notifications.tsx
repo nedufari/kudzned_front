@@ -14,7 +14,7 @@ import {
   Filter,
   X
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 type NotificationType = 'success' | 'warning' | 'info' | 'transaction';
 
@@ -305,11 +305,7 @@ const Notifications: React.FC = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', maxWidth: '900px', margin: '0 auto' }}>
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
+      <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: '16px' }}>
           <div>
             <h3 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -454,56 +450,59 @@ const Notifications: React.FC = () => {
             )}
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Notifications List */}
       <motion.div
         style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
         layout
       >
-        <AnimatePresence mode="popLayout">
-          {filteredNotifications.length > 0 ? (
-            filteredNotifications.map((notification) => (
+        {filteredNotifications.length > 0 ? (
+          filteredNotifications.map((notification, index) => (
+            <motion.div
+              key={notification.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.3 }}
+            >
               <NotificationCard
-                key={notification.id}
                 notification={notification}
                 onMarkRead={handleMarkRead}
                 onDelete={handleDelete}
               />
-            ))
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              style={{
-                textAlign: 'center',
-                padding: '80px 40px',
-                backgroundColor: '#0d0d12',
-                borderRadius: '32px',
-                border: '1px solid rgba(255,255,255,0.05)'
-              }}
-            >
-              <motion.div
-                animate={{ 
-                  y: [0, -10, 0],
-                  opacity: [0.3, 0.5, 0.3]
-                }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Bell size={64} color="#6b6b7d" style={{ marginBottom: '24px' }} />
-              </motion.div>
-              <h4 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>
-                {filter === 'unread' ? 'All caught up!' : 'No notifications yet'}
-              </h4>
-              <p style={{ color: '#a0a0b8' }}>
-                {filter === 'unread' 
-                  ? 'You\'ve read all your notifications. Great job staying on top of things!'
-                  : 'When you receive notifications, they\'ll appear here.'}
-              </p>
             </motion.div>
-          )}
-        </AnimatePresence>
+          ))
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            style={{
+              textAlign: 'center',
+              padding: '80px 40px',
+              backgroundColor: '#0d0d12',
+              borderRadius: '32px',
+              border: '1px solid rgba(255,255,255,0.05)'
+            }}
+          >
+            <motion.div
+              animate={{ 
+                y: [0, -10, 0],
+                opacity: [0.3, 0.5, 0.3]
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Bell size={64} color="#6b6b7d" style={{ marginBottom: '24px' }} />
+            </motion.div>
+            <h4 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>
+              {filter === 'unread' ? 'All caught up!' : 'No notifications yet'}
+            </h4>
+            <p style={{ color: '#a0a0b8' }}>
+              {filter === 'unread' 
+                ? 'You\'ve read all your notifications. Great job staying on top of things!'
+                : 'When you receive notifications, they\'ll appear here.'}
+            </p>
+          </motion.div>
+        )}
       </motion.div>
     </div>
   );

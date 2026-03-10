@@ -12,21 +12,21 @@ import {
 } from 'lucide-react';
 
 const SettingToggle = ({ icon: Icon, label, description, checked, onChange }: any) => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px', backgroundColor: '#16161e', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px' }}>
-    <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-       <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '12px', color: '#00f2ff' }}>
-         <Icon size={20} />
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', backgroundColor: '#16161e', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px' }} className="sm:p-6">
+    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }} className="sm:gap-4">
+       <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '10px', color: '#00f2ff' }} className="sm:p-3">
+         <Icon size={18} className="sm:w-5 sm:h-5" />
        </div>
        <div style={{ flex: 1 }}>
-         <p style={{ fontSize: '16px', fontWeight: '800', marginBottom: '4px' }}>{label}</p>
-         <p style={{ fontSize: '13px', color: '#a0a0b8' }}>{description}</p>
+         <p style={{ fontSize: '14px', fontWeight: '800', marginBottom: '4px' }} className="sm:text-base">{label}</p>
+         <p style={{ fontSize: '12px', color: '#a0a0b8', lineHeight: '1.4' }} className="sm:text-xs">{description}</p>
        </div>
     </div>
     <div 
       onClick={onChange}
       style={{ 
-        width: '56px', 
-        height: '32px', 
+        width: '48px', 
+        height: '28px', 
         borderRadius: '100px', 
         backgroundColor: checked ? '#00f2ff' : '#0d0d12', 
         border: '2px solid rgba(255,255,255,0.1)',
@@ -34,17 +34,21 @@ const SettingToggle = ({ icon: Icon, label, description, checked, onChange }: an
         cursor: 'pointer',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexShrink: 0
       }}
+      className="sm:w-14 sm:h-8"
     >
       <div style={{ 
-        width: '22px', 
-        height: '22px', 
+        width: '18px', 
+        height: '18px', 
         borderRadius: '50%', 
         backgroundColor: checked ? '#000' : '#a0a0b8', 
-        transform: `translateX(${checked ? '24px' : '0px'})`,
+        transform: `translateX(${checked ? '20px' : '0px'})`,
         transition: 'all 0.3s'
-      }} />
+      }} 
+      className="sm:w-6 sm:h-6"
+      />
     </div>
   </div>
 );
@@ -64,17 +68,17 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', maxWidth: '900px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '900px' }} className="sm:gap-8">
       <div>
-        <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>Security & Account Settings</h3>
-        <p style={{ color: '#a0a0b8', fontSize: '15px' }}>Configure your privacy, security, and interface preferences on KUDZNED.</p>
+        <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }} className="sm:text-2xl">Security & Account Settings</h3>
+        <p style={{ color: '#a0a0b8', fontSize: '14px' }} className="sm:text-sm">Configure your privacy, security, and interface preferences on KUDZNED.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '24px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }} className="sm:grid sm:grid-cols-2 sm:gap-6">
          {/* Security Settings */}
-         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <h4 style={{ fontSize: '14px', fontWeight: '900', color: '#6b6b7d', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Shield size={16} />
+         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} className="sm:gap-6">
+            <h4 style={{ fontSize: '13px', fontWeight: '900', color: '#6b6b7d', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }} className="sm:text-sm">
+              <Shield size={16} className="sm:w-4 sm:h-4" />
               Security
             </h4>
             <SettingToggle 
@@ -91,19 +95,19 @@ const Settings: React.FC = () => {
               checked={settings.emailAlerts}
               onChange={() => toggle('emailAlerts')}
             />
-            <div style={{ backgroundColor: 'rgba(255,180,0,0.05)', border: '1px solid rgba(255,180,0,0.1)', padding: '20px', borderRadius: '20px', display: 'flex', gap: '16px' }}>
-               <AlertCircle size={20} color="#f59e0b" style={{ flexShrink: 0 }} />
+            <div style={{ backgroundColor: 'rgba(255,180,0,0.05)', border: '1px solid rgba(255,180,0,0.1)', padding: '16px', borderRadius: '16px', display: 'flex', gap: '12px' }} className="sm:p-5 sm:gap-4">
+               <AlertCircle size={18} color="#f59e0b" style={{ flexShrink: 0 }} className="sm:w-5 sm:h-5" />
                <div>
-                  <p style={{ fontSize: '14px', fontWeight: '800', color: '#f59e0b' }}>Password expires in 42 days</p>
-                  <p style={{ fontSize: '12px', color: '#a0a0b8' }}>Consider changing it regularly for maximum security.</p>
+                  <p style={{ fontSize: '13px', fontWeight: '800', color: '#f59e0b' }} className="sm:text-sm">Password expires in 42 days</p>
+                  <p style={{ fontSize: '11px', color: '#a0a0b8', lineHeight: '1.4' }} className="sm:text-xs">Consider changing it regularly for maximum security.</p>
                </div>
             </div>
          </div>
 
          {/* Privacy & UI */}
-         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <h4 style={{ fontSize: '14px', fontWeight: '900', color: '#6b6b7d', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Eye size={16} />
+         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} className="sm:gap-6">
+            <h4 style={{ fontSize: '13px', fontWeight: '900', color: '#6b6b7d', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }} className="sm:text-sm">
+              <Eye size={16} className="sm:w-4 sm:h-4" />
               Privacy & Display
             </h4>
             <SettingToggle 
@@ -130,19 +134,19 @@ const Settings: React.FC = () => {
          </div>
       </div>
 
-       <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-             <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', padding: '12px', borderRadius: '16px', color: '#10b981' }}>
-                <CheckCircle2 size={24} />
+       <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }} className="sm:flex-row sm:justify-between sm:items-center sm:p-8">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="sm:gap-4">
+             <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', padding: '10px', borderRadius: '14px', color: '#10b981' }} className="sm:p-3">
+                <CheckCircle2 size={20} className="sm:w-6 sm:h-6" />
              </div>
              <div>
-               <p style={{ fontSize: '16px', fontWeight: '900' }}>Session Identity: Verified</p>
-               <p style={{ fontSize: '13px', color: '#a0a0b8' }}>Your connection to KUDZNED is encrypted with RSA-4096.</p>
+               <p style={{ fontSize: '15px', fontWeight: '900' }} className="sm:text-base">Session Identity: Verified</p>
+               <p style={{ fontSize: '12px', color: '#a0a0b8' }} className="sm:text-xs">Your connection to KUDZNED is encrypted with RSA-4096.</p>
              </div>
           </div>
-          <button style={{ color: '#00f2ff', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }} className="hover:underline">
+          <button style={{ color: '#00f2ff', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }} className="hover:underline sm:text-sm">
              Audit Sessions
-             <ChevronRight size={16} />
+             <ChevronRight size={16} className="sm:w-4 sm:h-4" />
           </button>
        </div>
     </div>
