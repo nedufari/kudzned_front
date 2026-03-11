@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Shop from './pages/Shop';
 import Topup from './pages/Topup';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import Transfers from './pages/Transfers';
 import Orders from './pages/Orders';
 import Vouches from './pages/Vouches';
@@ -31,6 +32,9 @@ function App() {
         
         {/* Login Route */}
         <Route path="/login" element={<Login />} />
+        
+        {/* Signup Route */}
+        <Route path="/signup" element={<Signup />} />
         
         {/* Authenticated Dashboard Routes (Shared Sidebar Layout) */}
         <Route element={<MainLayout />}>

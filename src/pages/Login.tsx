@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Lock, 
   Mail, 
@@ -190,9 +190,9 @@ const Login: React.FC = () => {
             <div style={{ marginTop: '40px', textAlign: 'center' }}>
               <p style={{ color: '#a0a0b8', fontSize: '14px' }}>
                 No account? 
-                <button style={{ color: '#ffffff', fontWeight: '700', marginLeft: '6px', backgroundColor: 'transparent', border: 'none' }}>
+                <Link to="/signup" style={{ color: '#ffffff', fontWeight: '700', marginLeft: '6px', textDecoration: 'none' }}>
                   Sign up
-                </button>
+                </Link>
               </p>
             </div>
             
