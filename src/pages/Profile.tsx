@@ -11,11 +11,34 @@ import {
   Save,
   Trash2
 } from 'lucide-react';
+import { apiClient } from '../services/api';
 
 const Profile: React.FC = () => {
-  const [name, setName] = useState('Nedu Franco');
+  const [name, setName] = useState('Loading...');
   const [address, setAddress] = useState('bc1qxy2kg2ryyxpx4lhuv067z8483m3m3j');
-  const email = 'nedufranco@gmail.com';
+  const [email, setEmail] = useState('Loading...');
+
+  // Load profile data immediately when component mounts
+  React.useEffect(() => {
+    const loadProfileData = async () => {
+      try {
+        console.log('Loading profile data...');
+        const userData = await apiClient.getCurrentUser();
+        console.log('Profile data loaded:', userData);
+        
+        // Update with real data
+        setName(userData.username);
+        setEmail(userData.email);
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+        // Keep default values if loading fails
+        setName('Profile Error');
+        setEmail('Error loading email');
+      }
+    };
+
+    loadProfileData();
+  }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }} className="lg:grid lg:grid-cols-[1fr_1.2fr] lg:gap-10">
@@ -70,7 +93,7 @@ const Profile: React.FC = () => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} className="sm:gap-6">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '12px', fontWeight: '800', color: '#6b6b7d', textTransform: 'uppercase', letterSpacing: '0.5px' }} className="sm:text-xs">Full Name</label>
+            <label style={{ fontSize: '12px', fontWeight: '800', color: '#6b6b7d', textTransform: 'uppercase', letterSpacing: '0.5px' }} className="sm:text-xs">Username</label>
             <div style={{ backgroundColor: '#16161e', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', padding: '14px', display: 'flex', alignItems: 'center', gap: '10px' }} className="sm:p-4 sm:gap-3">
               <User size={16} color="#00f2ff" className="sm:w-5 sm:h-5" />
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} style={{ background: 'none', border: 'none', outline: 'none', color: 'white', width: '100%', fontSize: '14px' }} className="sm:text-base" />
@@ -81,7 +104,7 @@ const Profile: React.FC = () => {
             <label style={{ fontSize: '12px', fontWeight: '800', color: '#6b6b7d', textTransform: 'uppercase', letterSpacing: '0.5px' }} className="sm:text-xs">Email Address</label>
             <div style={{ backgroundColor: '#16161e', border: '1px solid rgba(0,242,255,0.2)', borderRadius: '14px', padding: '14px', display: 'flex', alignItems: 'center', gap: '10px' }} className="sm:p-4 sm:gap-3">
               <Mail size={16} color="#00f2ff" className="sm:w-5 sm:h-5" />
-              <input type="email" value={email} readOnly style={{ background: 'none', border: 'none', outline: 'none', color: '#a0a0b8', width: '100%', fontSize: '14px', cursor: 'not-allowed' }} className="sm:text-base" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ background: 'none', border: 'none', outline: 'none', color: 'white', width: '100%', fontSize: '14px' }} className="sm:text-base" />
               <CheckCircle2 size={16} color="#10b981" className="sm:w-5 sm:h-5" />
             </div>
             <p style={{ fontSize: '11px', color: '#6b6b7d' }} className="sm:text-xs">Verified email cannot be changed. Contact support for help.</p>

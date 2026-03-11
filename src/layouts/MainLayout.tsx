@@ -6,7 +6,6 @@ import {
   Wallet, 
   History, 
   User, 
-  Settings, 
   MessageSquare, 
   Video, 
   LogOut,
@@ -19,6 +18,7 @@ import {
   ShoppingCart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiClient } from '../services/api';
 
 const SidebarLink = ({ to, icon: Icon, label, badge, onClick }: { to: string, icon: any, label: string, badge?: string, onClick?: () => void }) => (
   <NavLink 
@@ -135,6 +135,14 @@ const SidebarLink = ({ to, icon: Icon, label, badge, onClick }: { to: string, ic
 const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleLogout = () => {
+    console.log('Logging out...');
+    // Clear token and redirect
+    apiClient.logout();
+    console.log('Token cleared, redirecting to login');
+    navigate('/login');
+  };
   const location = useLocation();
 
   // Close sidebar when navigating on mobile
@@ -242,8 +250,11 @@ const MainLayout: React.FC = () => {
           <div style={{ marginTop: 'auto', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <SidebarLink to="/notifications" icon={Bell} label="Notifications" badge="3" />
             <SidebarLink to="/profile" icon={User} label="My Profile" />
-            <SidebarLink to="/settings" icon={Settings} label="Settings" />
-            <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '16px', color: '#ff4b4b', cursor: 'pointer', marginTop: '4px', transition: 'all 0.2s', borderRadius: '12px' }} className="hover:bg-[rgba(255,75,75,0.05)] group">
+            <div 
+              onClick={handleLogout}
+              style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '16px', color: '#ff4b4b', cursor: 'pointer', marginTop: '4px', transition: 'all 0.2s', borderRadius: '12px' }} 
+              className="hover:bg-[rgba(255,75,75,0.05)] group"
+            >
               <LogOut size={20} className="group-hover:rotate-12 transition-transform" />
               <span className="font-semibold text-[15px]">Logout</span>
             </div>

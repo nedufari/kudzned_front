@@ -10,9 +10,12 @@ import {
   AlertCircle,
   Loader2,
   User,
-  UserPlus
+  UserPlus,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { apiClient } from '../services/api';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -26,6 +29,8 @@ const Signup: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -58,7 +63,7 @@ const Signup: React.FC = () => {
     return true;
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -66,11 +71,21 @@ const Signup: React.FC = () => {
     setIsLoading(true);
     setError('');
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await apiClient.register({
+        email: formData.email,
+        password: formData.password,
+        username: formData.username,
+        first_name: formData.firstName,
+        last_name: formData.lastName
+      });
       navigate('/dashboard');
-    }, 1500);
+    } catch (error) {
+      console.error('Signup failed:', error);
+      // Error toast is already shown by the API client
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -291,7 +306,7 @@ const Signup: React.FC = () => {
                 }} className="focus-within-border-cyan">
                   <Lock size={18} className="text-[#a0a0b8]" />
                   <input 
-                    type="password" 
+                    type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
                     placeholder="••••••••" 
@@ -299,6 +314,25 @@ const Signup: React.FC = () => {
                     required
                     disabled={isLoading}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: '#a0a0b8',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      transition: 'color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#ffffff'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#a0a0b8'}
+                    disabled={isLoading}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 
@@ -315,7 +349,7 @@ const Signup: React.FC = () => {
                 }} className="focus-within-border-cyan">
                   <Lock size={18} className="text-[#a0a0b8]" />
                   <input 
-                    type="password" 
+                    type={showConfirmPassword ? 'text' : 'password'}
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                     placeholder="••••••••" 
@@ -323,6 +357,25 @@ const Signup: React.FC = () => {
                     required
                     disabled={isLoading}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: '#a0a0b8',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      transition: 'color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#ffffff'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#a0a0b8'}
+                    disabled={isLoading}
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 

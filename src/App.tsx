@@ -11,7 +11,6 @@ import Orders from './pages/Orders';
 import Vouches from './pages/Vouches';
 import CashoutClips from './pages/CashoutClips';
 import Profile from './pages/Profile';
-import Settings from './pages/Settings';
 import ProductDetail from './pages/ProductDetail';
 import OrderDetail from './pages/OrderDetail';
 import VouchDetail from './pages/VouchDetail';
@@ -65,7 +64,6 @@ function App() {
           <Route path="/orders/:id" element={<OrderDetail />} />
           
           <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
           <Route path="/notifications" element={<Notifications />} />
         </Route>
 

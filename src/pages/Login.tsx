@@ -6,24 +6,33 @@ import {
   ArrowRight, 
   ShieldCheck, 
   Zap,
-  Globe
+  Globe,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { apiClient } from '../services/api';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('nedufranco@gmail.com');
   const [password, setPassword] = useState('98654449');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    
+    try {
+      await apiClient.login(email, password);
       navigate('/dashboard');
-    }, 1500);
+    } catch (error) {
+      console.error('Login failed:', error);
+      // Error toast is already shown by the API client
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -152,13 +161,31 @@ const Login: React.FC = () => {
                 }} className="focus-within-border-cyan">
                   <Lock size={18} className="text-[#a0a0b8]" />
                   <input 
-                    type="password" 
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••" 
                     style={{ backgroundColor: 'transparent', border: 'none', outline: 'none', color: 'white', padding: '14px 0', width: '100%', fontSize: '16px' }}
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: '#a0a0b8',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      transition: 'color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#ffffff'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#a0a0b8'}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 
