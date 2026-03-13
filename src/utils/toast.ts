@@ -28,7 +28,7 @@ class SimpleToast {
 
   show(options: ToastOptions) {
     const container = this.createContainer();
-    const toastId = ++this.toastCount;
+    ++this.toastCount; // Increment counter but don't store in variable
     
     const toast = document.createElement('div');
     toast.style.cssText = `

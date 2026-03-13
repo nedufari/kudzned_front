@@ -48,6 +48,7 @@ const CartPage: React.FC = () => {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
+  const [checkingOut, setCheckingOut] = useState(false);
 
   // Load cart data automatically
   useEffect(() => {
@@ -129,6 +130,28 @@ const CartPage: React.FC = () => {
         newSet.delete(itemId);
         return newSet;
       });
+    }
+  };
+
+  // Handle checkout with balance validation
+  const handleCheckout = async () => {
+    if (!cart || cart.items.length === 0) return;
+    
+    setCheckingOut(true);
+    try {
+      console.log('Starting checkout process...');
+      const order = await apiClient.checkout(cart);
+      console.log('Order created:', order);
+      
+      toast.success('Order placed successfully!');
+      
+      // Navigate to success page or order detail
+      navigate(`/orders/${order.id}`);
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      // Error toast is already shown by the API client
+    } finally {
+      setCheckingOut(false);
     }
   };
 
@@ -490,12 +513,12 @@ const CartPage: React.FC = () => {
              </div>
 
              <button 
-                onClick={() => navigate('/checkout')}
-                disabled={cart.items.length === 0}
+                onClick={handleCheckout}
+                disabled={cart.items.length === 0 || checkingOut}
                 style={{ 
                   width: '100%', 
-                  backgroundColor: cart.items.length === 0 ? '#666' : '#00f2ff', 
-                  color: cart.items.length === 0 ? '#ccc' : '#000', 
+                  backgroundColor: (cart.items.length === 0 || checkingOut) ? '#666' : '#00f2ff', 
+                  color: (cart.items.length === 0 || checkingOut) ? '#ccc' : '#000', 
                   padding: 'clamp(14px, 3vw, 18px)', 
                   borderRadius: '16px', 
                   fontWeight: '900', 
@@ -506,10 +529,21 @@ const CartPage: React.FC = () => {
                   gap: '12px', 
                   marginBottom: 'clamp(12px, 3vw, 16px)',
                   border: 'none',
-                  cursor: cart.items.length === 0 ? 'not-allowed' : 'pointer'
+                  cursor: (cart.items.length === 0 || checkingOut) ? 'not-allowed' : 'pointer'
                 }}
               >
-                {cart.items.length === 0 ? 'Cart Empty' : 'Checkout'} <ArrowRight size={18} />
+                {checkingOut ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Processing...
+                  </>
+                ) : cart.items.length === 0 ? (
+                  'Cart Empty'
+                ) : (
+                  <>
+                    Checkout <ArrowRight size={18} />
+                  </>
+                )}
              </button>
              <p style={{ 
                textAlign: 'center', 

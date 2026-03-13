@@ -9,7 +9,8 @@ import {
   Globe,
   ArrowRight,
   RefreshCw,
-  Loader2
+  Loader2,
+  X
 } from 'lucide-react';
 import { apiClient } from '../services/api';
 import { toast } from '../utils/toast';
@@ -49,6 +50,14 @@ const Shop: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  
+  // Filter states
+  const [showFilters, setShowFilters] = useState(false);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'created_at'>('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [inStockOnly, setInStockOnly] = useState(false);
 
   const testApiEndpoints = async () => {
     console.log('Testing API endpoints...');
@@ -145,7 +154,7 @@ const Shop: React.FC = () => {
     
     setLoading(true);
     try {
-      const filters = {
+      const filters: any = {
         page: 1,
         limit: 20,
         status: 'active' as const,
@@ -187,6 +196,20 @@ const Shop: React.FC = () => {
       console.error('Failed to add to cart:', error);
       toast.error('Failed to add to cart');
     }
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setActiveCategory('All Products');
+    setMinPrice('');
+    setMaxPrice('');
+    setSortBy('created_at');
+    setSortOrder('desc');
+    setInStockOnly(false);
+  };
+
+  const handleSearch = () => {
+    searchWithFilters();
   };
 
   // Simple local filtering

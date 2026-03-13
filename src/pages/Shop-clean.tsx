@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
   ShoppingBag, 
-  Filter, 
   Zap, 
   Star,
   Globe,
@@ -109,7 +108,7 @@ const Shop: React.FC = () => {
   const searchWithFilters = async () => {
     setLoading(true);
     try {
-      const filters = {
+      const filters: any = {
         page: 1,
         limit: 20,
         status: 'active' as const,
@@ -295,8 +294,7 @@ const Shop: React.FC = () => {
         overflowX: 'auto', 
         paddingBottom: '8px', 
         scrollbarWidth: 'none', 
-        msOverflowStyle: 'none',
-        WebkitScrollbar: { display: 'none' }
+        msOverflowStyle: 'none'
       }}>
         {categoryOptions.map((cat) => (
           <button 

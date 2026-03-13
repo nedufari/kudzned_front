@@ -1,7 +1,7 @@
 // API service with toast notifications
 import { toast } from '../utils/toast';
 
-const API_BASE_URL = ' https://2b64-102-90-100-247.ngrok-free.app/api/v1';
+const API_BASE_URL = 'https://2b64-102-90-100-247.ngrok-free.app/api/v1';
 
 // Basic types
 export interface User {
@@ -133,14 +133,46 @@ interface ApiCart {
   updated_at: string;
 }
 
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: string;
+  total_price: string;
+  created_at: string;
+  updated_at: string;
+  product: ApiProduct;
+}
+
 export interface Order {
   id: string;
   user_id: string;
-  total: number;
+  total_amount: string;
   status: 'pending' | 'processing' | 'completed' | 'cancelled';
-  items: CartItem[];
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
+  items: OrderItem[];
   created_at: string;
   updated_at: string;
+}
+
+export interface CreateOrderRequest {
+  items: {
+    productId: string;
+    quantity: number;
+  }[];
+}
+
+export interface Wallet {
+  id: string;
+  user_id: string;
+  balance: string;
+  available_balance: string;
+  total_deposited: string;
+  total_withdrawn: string;
+  created_at: string;
+  updated_at: string;
+  btc_addresses: string[];
 }
 
 export interface Category {
@@ -207,18 +239,23 @@ class ApiClient {
         const errorText = await response.text();
         console.error('API Error:', errorText);
         
-        // Show error toast
-        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-        try {
-          const errorData = JSON.parse(errorText);
-          if (errorData.message) {
-            errorMessage = errorData.message;
+        // Only show toast errors for critical operations (not background data loading)
+        const isCriticalOperation = options.method === 'POST' || options.method === 'PUT' || options.method === 'DELETE';
+        
+        if (isCriticalOperation) {
+          let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          try {
+            const errorData = JSON.parse(errorText);
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+          } catch (e) {
+            // Use default error message
           }
-        } catch (e) {
-          // Use default error message
+          
+          toast.error(errorMessage);
         }
         
-        toast.error(errorMessage);
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
@@ -234,8 +271,10 @@ class ApiClient {
     } catch (error) {
       console.error('API Request failed:', error);
       
-      // Show error toast for network/connection errors
-      if (error instanceof Error && !error.message.startsWith('HTTP')) {
+      // Only show network error toasts for critical operations
+      const isCriticalOperation = options.method === 'POST' || options.method === 'PUT' || options.method === 'DELETE';
+      
+      if (isCriticalOperation && error instanceof Error && !error.message.startsWith('HTTP')) {
         toast.error('Network error. Please check your connection.');
       }
       
@@ -368,18 +407,6 @@ class ApiClient {
     return this.request<Category[]>('/products/categories', {
       method: 'GET',
     });
-  }
-
-  // Helper method to get category name by ID
-  private async getCategoryName(categoryId: string): Promise<string> {
-    try {
-      const categories = await this.getCategories();
-      const category = categories.find(cat => cat.id === categoryId);
-      return category ? category.name : 'Unknown';
-    } catch (error) {
-      console.error('Failed to get category name:', error);
-      return 'Unknown';
-    }
   }
 
   // Cart methods
@@ -562,25 +589,153 @@ class ApiClient {
   }
 
   // Order methods
-  async createOrder(): Promise<Order> {
+  // Order methods
+  async createOrder(orderData: CreateOrderRequest): Promise<Order> {
     const response = await this.request<Order>('/orders', {
       method: 'POST',
+      body: JSON.stringify(orderData),
     });
     
     toast.success('Order created successfully!');
+    
+    // Dispatch wallet and cart update events since order affects both
+    window.dispatchEvent(new CustomEvent('walletUpdated'));
+    window.dispatchEvent(new CustomEvent('cartUpdated'));
+    
     return response;
   }
 
-  async getOrders(): Promise<Order[]> {
-    return this.request<Order[]>('/orders', {
-      method: 'GET',
-    });
+  async getOrders(page: number = 1, limit: number = 20): Promise<Order[]> {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    
+    try {
+      const response = await this.request<any>(`/orders?${params.toString()}`, {
+        method: 'GET',
+      });
+      
+      // Handle both direct response and wrapped response
+      const ordersData = response.data || response;
+      
+      // If it's an array, return it directly, otherwise return empty array
+      if (Array.isArray(ordersData)) {
+        return ordersData;
+      } else if (ordersData && Array.isArray(ordersData.orders)) {
+        // Handle paginated response with orders array
+        return ordersData.orders;
+      } else {
+        // Return empty array if no orders found
+        return [];
+      }
+    } catch (error) {
+      console.error('Failed to fetch orders:', error);
+      // Return empty array on error instead of throwing
+      return [];
+    }
   }
 
   async getOrder(id: string): Promise<Order> {
-    return this.request<Order>(`/orders/${id}`, {
+    const response = await this.request<any>(`/orders/${id}`, {
       method: 'GET',
     });
+    
+    // Handle both direct response and wrapped response
+    const orderData = response.data || response;
+    
+    return orderData as Order;
+  }
+
+  // Wallet methods
+  async getWallet(): Promise<Wallet> {
+    try {
+      return await this.request<Wallet>('/wallets', {
+        method: 'GET',
+      });
+    } catch (error) {
+      console.error('Failed to fetch wallet:', error);
+      throw error; // Re-throw wallet errors since wallet is critical
+    }
+  }
+
+  // Transaction methods
+  async getTransactions(params?: { page?: number; limit?: number }): Promise<any[]> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/wallets/transactions?${queryString}` : '/wallets/transactions';
+    
+    try {
+      const response = await this.request<any>(endpoint, {
+        method: 'GET',
+      });
+      
+      // Handle both direct response and wrapped response
+      const transactionsData = response.data || response;
+      
+      // If it's an array, return it directly, otherwise return empty array
+      if (Array.isArray(transactionsData)) {
+        return transactionsData;
+      } else if (transactionsData && Array.isArray(transactionsData.transactions)) {
+        // Handle paginated response with transactions array
+        return transactionsData.transactions;
+      } else {
+        // Return empty array if no transactions found
+        return [];
+      }
+    } catch (error) {
+      console.error('Failed to fetch transactions:', error);
+      // Return empty array on error instead of throwing
+      return [];
+    }
+  }
+
+  async getTransaction(id: string): Promise<any> {
+    try {
+      return await this.request<any>(`/wallets/transactions/${id}`, {
+        method: 'GET',
+      });
+    } catch (error) {
+      console.error('Failed to fetch transaction:', error);
+      throw error; // Re-throw for individual transaction errors
+    }
+  }
+
+  // Helper method to check if user has sufficient balance for checkout
+  async checkSufficientBalance(totalAmount: number): Promise<boolean> {
+    try {
+      const wallet = await this.getWallet();
+      const availableBalance = parseFloat(wallet.available_balance) / 100; // Convert from satoshis to dollars
+      return availableBalance >= totalAmount;
+    } catch (error) {
+      console.error('Failed to check wallet balance:', error);
+      return false;
+    }
+  }
+
+  // Checkout method with balance validation
+  async checkout(cart: Cart): Promise<Order> {
+    // Check if user has sufficient balance
+    const hasSufficientBalance = await this.checkSufficientBalance(cart.total);
+    
+    if (!hasSufficientBalance) {
+      const wallet = await this.getWallet();
+      const availableBalance = (parseFloat(wallet.available_balance) / 100).toFixed(2);
+      toast.error(`Insufficient balance. You have ${availableBalance} but need ${cart.total.toFixed(2)}`);
+      throw new Error('Insufficient balance');
+    }
+
+    // Create order data from cart
+    const orderData: CreateOrderRequest = {
+      items: cart.items.map(item => ({
+        productId: item.product_id,
+        quantity: item.quantity
+      }))
+    };
+
+    return this.createOrder(orderData);
   }
 }
 

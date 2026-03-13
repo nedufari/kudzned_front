@@ -136,8 +136,9 @@ const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [walletBalance, setWalletBalance] = useState('0.00');
 
-  // Load cart count on component mount and when location changes
+  // Load cart count and wallet balance on component mount
   useEffect(() => {
     const loadCartCount = async () => {
       try {
@@ -145,22 +146,56 @@ const MainLayout: React.FC = () => {
         const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
         setCartItemCount(totalItems);
       } catch (error) {
-        console.error('Failed to load cart count:', error);
+        console.error('Failed to load cart count (MainLayout):', error);
         setCartItemCount(0);
+        // Don't show toast errors in MainLayout to avoid duplicate errors
       }
     };
 
-    loadCartCount();
+    const loadWalletBalance = async () => {
+      try {
+        const wallet = await apiClient.getWallet();
+        const balance = (parseFloat(wallet.balance) / 100).toFixed(2); // Convert from satoshis to dollars
+        setWalletBalance(balance);
+      } catch (error) {
+        console.error('Failed to load wallet balance (MainLayout):', error);
+        setWalletBalance('0.00');
+        // Don't show toast errors in MainLayout to avoid duplicate errors
+      }
+    };
+
+    // Load data silently without showing errors
+    const loadData = async () => {
+      try {
+        await Promise.allSettled([loadCartCount(), loadWalletBalance()]);
+      } catch (error) {
+        console.error('Failed to load MainLayout data:', error);
+        // Silently handle errors to prevent duplicate toasts
+      }
+    };
+
+    loadData();
 
     // Listen for cart updates from other components
     const handleCartUpdate = () => {
-      loadCartCount();
+      loadCartCount().catch(error => {
+        console.error('Failed to update cart count:', error);
+      });
+    };
+
+    // Listen for wallet updates
+    const handleWalletUpdate = () => {
+      loadWalletBalance().catch(error => {
+        console.error('Failed to update wallet balance:', error);
+      });
     };
 
     window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('walletUpdated', handleWalletUpdate);
 
     return () => {
       window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('walletUpdated', handleWalletUpdate);
     };
   }, []);
 
@@ -175,8 +210,9 @@ const MainLayout: React.FC = () => {
           const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
           setCartItemCount(totalItems);
         } catch (error) {
-          console.error('Failed to load cart count:', error);
+          console.error('Failed to load cart count (MainLayout):', error);
           setCartItemCount(0);
+          // Don't show toast errors in MainLayout
         }
       };
       loadCartCount();
@@ -323,7 +359,7 @@ const MainLayout: React.FC = () => {
               </div>
               <div style={{ textAlign: 'left' }}>
                 <p style={{ fontSize: '10px', color: '#6b6b7d', textTransform: 'uppercase', fontWeight: '800', letterSpacing: '0.8px' }}>Balance</p>
-                <p style={{ fontSize: '18px', fontWeight: '800', color: 'white' }}>$0.00</p>
+                <p style={{ fontSize: '18px', fontWeight: '800', color: 'white' }}>${walletBalance}</p>
               </div>
             </div>
             
