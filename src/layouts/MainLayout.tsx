@@ -135,6 +135,53 @@ const SidebarLink = ({ to, icon: Icon, label, badge, onClick }: { to: string, ic
 const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [cartItemCount, setCartItemCount] = useState(0);
+
+  // Load cart count on component mount and when location changes
+  useEffect(() => {
+    const loadCartCount = async () => {
+      try {
+        const cart = await apiClient.getCart();
+        const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+        setCartItemCount(totalItems);
+      } catch (error) {
+        console.error('Failed to load cart count:', error);
+        setCartItemCount(0);
+      }
+    };
+
+    loadCartCount();
+
+    // Listen for cart updates from other components
+    const handleCartUpdate = () => {
+      loadCartCount();
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, []);
+
+  // Refresh cart count when navigating to/from cart page
+  const location = useLocation();
+  useEffect(() => {
+    if (location.pathname === '/cart') {
+      // Refresh cart count when visiting cart page
+      const loadCartCount = async () => {
+        try {
+          const cart = await apiClient.getCart();
+          const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+          setCartItemCount(totalItems);
+        } catch (error) {
+          console.error('Failed to load cart count:', error);
+          setCartItemCount(0);
+        }
+      };
+      loadCartCount();
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     console.log('Logging out...');
@@ -143,7 +190,6 @@ const MainLayout: React.FC = () => {
     console.log('Token cleared, redirecting to login');
     navigate('/login');
   };
-  const location = useLocation();
 
   // Close sidebar when navigating on mobile
   useEffect(() => {
@@ -239,7 +285,7 @@ const MainLayout: React.FC = () => {
           <SidebarLink to="/shop" icon={ShoppingBag} label="Shop" badge="NEW" />
           <SidebarLink to="/topup" icon={PlusCircle} label="Topups" />
           <SidebarLink to="/transfers" icon={CreditCard} label="Transfers" />
-          <SidebarLink to="/cart" icon={ShoppingCart} label="My Cart" badge="2" />
+          <SidebarLink to="/cart" icon={ShoppingCart} label="My Cart" badge={cartItemCount > 0 ? cartItemCount.toString() : undefined} />
           
           <div style={{ padding: '32px 16px 12px 16px', fontSize: '11px', fontWeight: '800', color: '#4b4b5e', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Support & Info</div>
           
@@ -359,68 +405,70 @@ const MainLayout: React.FC = () => {
               whileTap={{ scale: 0.95 }}
             >
               <ShoppingCart size={22} color="#a0a0b8" />
-              <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                  rotate: [0, -15, 15, -15, 0]
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  times: [0, 0.2, 0.4, 0.6, 1]
-                }}
-                style={{ position: 'absolute', top: -6, right: -6 }}
-              >
+              {cartItemCount > 0 && (
                 <motion.div
                   animate={{
-                    boxShadow: [
-                      '0 0 0px rgba(255, 0, 242, 0)',
-                      '0 0 20px rgba(255, 0, 242, 0.8)',
-                      '0 0 0px rgba(255, 0, 242, 0)'
-                    ]
+                    scale: [1, 1.2, 1],
+                    rotate: [0, -15, 15, -15, 0]
                   }}
                   transition={{
-                    duration: 2,
+                    duration: 2.5,
                     repeat: Infinity,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
+                    times: [0, 0.2, 0.4, 0.6, 1]
                   }}
-                  style={{
-                    position: 'absolute',
-                    inset: -6,
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle, rgba(255, 0, 242, 0.4) 0%, transparent 70%)',
-                    filter: 'blur(6px)'
-                  }}
-                />
-                <motion.div 
-                  animate={{
-                    backgroundColor: ['#ff00f2', '#ff33f5', '#ff00f2']
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  style={{ 
-                    position: 'relative',
-                    backgroundColor: '#ff00f2', 
-                    color: 'white', 
-                    fontSize: '11px', 
-                    fontWeight: '900', 
-                    width: '24px', 
-                    height: '24px', 
-                    borderRadius: '50%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    border: '3px solid #050505',
-                    boxShadow: '0 0 15px rgba(255, 0, 242, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.3)'
-                  }}
+                  style={{ position: 'absolute', top: -6, right: -6 }}
                 >
-                  2
+                  <motion.div
+                    animate={{
+                      boxShadow: [
+                        '0 0 0px rgba(255, 0, 242, 0)',
+                        '0 0 20px rgba(255, 0, 242, 0.8)',
+                        '0 0 0px rgba(255, 0, 242, 0)'
+                      ]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    style={{
+                      position: 'absolute',
+                      inset: -6,
+                      borderRadius: '50%',
+                      background: 'radial-gradient(circle, rgba(255, 0, 242, 0.4) 0%, transparent 70%)',
+                      filter: 'blur(6px)'
+                    }}
+                  />
+                  <motion.div 
+                    animate={{
+                      backgroundColor: ['#ff00f2', '#ff33f5', '#ff00f2']
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    style={{ 
+                      position: 'relative',
+                      backgroundColor: '#ff00f2', 
+                      color: 'white', 
+                      fontSize: '11px', 
+                      fontWeight: '900', 
+                      width: '24px', 
+                      height: '24px', 
+                      borderRadius: '50%', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      border: '3px solid #050505',
+                      boxShadow: '0 0 15px rgba(255, 0, 242, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.3)'
+                    }}
+                  >
+                    {cartItemCount}
+                  </motion.div>
                 </motion.div>
-              </motion.div>
+              )}
             </motion.div>
 
             <div style={{ width: '48px', height: '48px', borderRadius: '16px', border: '2px solid rgba(0,242,255,0.3)', padding: '2px', cursor: 'pointer', transition: 'all 0.2s' }} className="hover:border-[#00f2ff]">

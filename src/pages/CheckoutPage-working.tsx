@@ -10,101 +10,32 @@ import {
   Loader2
 } from 'lucide-react';
 
-// Define types locally to avoid API import issues
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  stock: number;
-  created_at: string;
-  updated_at: string;
-}
-
-interface CartItem {
-  id: string;
-  product_id: string;
-  quantity: number;
-  price: number;
-  product: Product;
-}
-
-interface Cart {
-  id: string;
-  user_id: string;
-  items: CartItem[];
-  total: number;
-  created_at: string;
-  updated_at: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  username: string;
-  role: string;
-  status: string;
-}
-
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('crypto');
   const [processing, setProcessing] = useState(false);
 
-  // Use mock data that works - no useEffect, no API calls that cause blank screens
-  const mockUser = {
-    id: 'user-1',
-    email: 'nedufranco@gmail.com',
-    username: 'nedufari',
-    role: 'customer',
-    status: 'active'
+  // Static data - no API calls
+  const user = {
+    email: 'nedufranco@gmail.com'
   };
 
-  const mockCart = {
-    id: 'cart-1',
-    user_id: 'user-1',
+  const cart = {
     items: [
-      {
-        id: 'cart-1',
-        product_id: 'bank-01',
-        quantity: 1,
-        price: 450.00,
-        product: {
-          id: 'bank-01',
-          name: 'Chase High-Balance Personal Log',
-          description: 'Premium Chase personal account',
-          price: 450.00,
-          category: 'Bank Logs',
-          stock: 5,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      }
+      { name: 'Chase High-Balance Personal Log', price: 450.00 }
     ],
-    total: 450.00,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    total: 450.00
   };
-
-  const cart = mockCart;
-  const user = mockUser;
-  const subtotal = cart.total;
 
   const handleCompletePayment = async () => {
-    if (!cart || cart.items.length === 0) {
-      navigate('/cart');
-      return;
-    }
-
     setProcessing(true);
     try {
-      // Simulate API call
+      // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
-      // Navigate to success page
       navigate('/success');
     } catch (error) {
-      console.error('Failed to create order:', error);
+      console.error('Payment failed:', error);
+      alert('Payment failed. Please try again.');
     } finally {
       setProcessing(false);
     }
@@ -115,8 +46,17 @@ const CheckoutPage: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button 
           onClick={() => navigate('/cart')}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#a0a0b8', fontWeight: '700', fontSize: '14px' }}
-          className="hover:text-[#00f2ff]"
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            color: '#a0a0b8', 
+            fontWeight: '700', 
+            fontSize: '14px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer'
+          }}
         >
           <ArrowLeft size={18} />
           Back to Cart
@@ -124,7 +64,7 @@ const CheckoutPage: React.FC = () => {
         <h3 style={{ fontSize: '24px', fontWeight: '900' }}>Confirm Checkout</h3>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1.2fr 0.8fr))', gap: '40px' }} className="main-grid">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1.2fr 0.8fr))', gap: '40px' }}>
         {/* Left - Payment Selection & Info */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
           <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '32px', padding: '40px' }}>
@@ -165,7 +105,7 @@ const CheckoutPage: React.FC = () => {
                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <label style={{ fontSize: '12px', color: '#6b6b7d', fontWeight: '800', textTransform: 'uppercase' }}>Delivery Email</label>
                   <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '16px', borderRadius: '16px', fontSize: '15px' }}>
-                    {user?.email || 'Loading...'}
+                    {user.email}
                   </div>
                </div>
                <div style={{ backgroundColor: 'rgba(0, 242, 255, 0.05)', border: '1px solid rgba(0, 242, 255, 0.1)', padding: '16px', borderRadius: '16px', fontSize: '13px', color: '#00f2ff', display: 'flex', gap: '12px' }}>
@@ -184,7 +124,7 @@ const CheckoutPage: React.FC = () => {
              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px' }}>
                    <span style={{ color: '#a0a0b8' }}>Subtotal ({cart.items.length} items)</span>
-                   <span style={{ fontWeight: '700' }}>${subtotal.toFixed(2)}</span>
+                   <span style={{ fontWeight: '700' }}>${cart.total.toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px' }}>
                    <span style={{ color: '#a0a0b8' }}>Network Fees</span>
@@ -193,7 +133,7 @@ const CheckoutPage: React.FC = () => {
                 <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.05)' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '20px', fontWeight: '950' }}>
                    <span>Order Total</span>
-                   <span style={{ color: '#00f2ff' }}>${subtotal.toFixed(2)}</span>
+                   <span style={{ color: '#00f2ff' }}>${cart.total.toFixed(2)}</span>
                 </div>
              </div>
 
