@@ -1,36 +1,114 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Upload, 
   X,
-  CheckCircle2,
   Video,
-  DollarSign,
-  Play,
-  AlertCircle
+  DollarSign
 } from 'lucide-react';
-import { api } from '../services/api';
-import type { CreateClipRequest } from '../services/api';
+import { api, CashoutClipType } from '../services/api';
+import type { Product, CreateClipRequest } from '../services/api';
 
 const ClipUpload: React.FC = () => {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState<Omit<CreateClipRequest, 'video_file'>>({
+  const [formData, setFormData] = useState<Omit<CreateClipRequest, 'video' | 'thumbnail'>>({
+    product_id: '',
     title: '',
     description: '',
-    profit_amount: 0,
+    amount: 0,
+    cashout_type: CashoutClipType.BANK_TRANSFER,
+    payment_method: '',
+    duration_seconds: 0,
     tags: []
   });
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [availableTags] = useState([
-    'Chase', 'Wells Fargo', 'Bank of America', 'PayPal', 'Cashout', 'Proof', 
-    'Live', 'Success', 'High Balance', 'Wire Transfer', 'Crypto', 'Bitcoin'
+    'chase', 'wells-fargo', 'bank-of-america', 'paypal', 'cashout', 'proof', 
+    'live', 'success', 'high-balance', 'wire-transfer', 'crypto', 'bitcoin'
   ]);
 
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Load products on component mount
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    setLoadingProducts(true);
+    try {
+      const data = await api.getProducts({ limit: 100 });
+      setProducts(data);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  const getCashoutTypeLabel = (type: CashoutClipType): string => {
+    const labels: Record<CashoutClipType, string> = {
+      [CashoutClipType.BANK_TRANSFER]: 'Bank Transfer',
+      [CashoutClipType.CRYPTO_WITHDRAWAL]: 'Crypto Withdrawal',
+      [CashoutClipType.PAYPAL]: 'PayPal',
+      [CashoutClipType.CASHAPP]: 'CashApp',
+      [CashoutClipType.VENMO]: 'Venmo',
+      [CashoutClipType.ZELLE]: 'Zelle',
+      [CashoutClipType.WIRE_TRANSFER]: 'Wire Transfer',
+      [CashoutClipType.CHECK]: 'Check',
+      [CashoutClipType.OTHER]: 'Other'
+    };
+    return labels[type] || type;
+  };
+
+  const extractThumbnail = (file: File): Promise<File | null> => {
+    return new Promise((resolve) => {
+      const video = document.createElement('video');
+      const url = URL.createObjectURL(file);
+      video.src = url;
+      video.muted = true;
+      video.playsInline = true;
+      video.crossOrigin = 'anonymous';
+
+      video.onloadedmetadata = () => {
+        // Seek to 1s or 10% of duration, whichever is smaller
+        video.currentTime = Math.min(1, video.duration * 0.1);
+      };
+
+      video.onseeked = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth || 1280;
+          canvas.height = video.videoHeight || 720;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { URL.revokeObjectURL(url); resolve(null); return; }
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            URL.revokeObjectURL(url);
+            if (blob) {
+              const thumbFile = new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' });
+              resolve(thumbFile);
+            } else {
+              resolve(null);
+            }
+          }, 'image/jpeg', 0.85);
+        } catch {
+          URL.revokeObjectURL(url);
+          resolve(null);
+        }
+      };
+
+      video.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+      video.load();
+    });
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Check file size (100MB limit)
@@ -48,11 +126,18 @@ const ClipUpload: React.FC = () => {
       setVideoFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
+
+      // Auto-extract thumbnail
+      const thumb = await extractThumbnail(file);
+      if (thumb) {
+        setThumbnailFile(thumb);
+      }
     }
   };
 
   const removeVideo = () => {
     setVideoFile(null);
+    setThumbnailFile(null);
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl('');
@@ -85,13 +170,18 @@ const ClipUpload: React.FC = () => {
       return;
     }
     
+    if (!formData.product_id) {
+      alert('Please select a product');
+      return;
+    }
+    
     if (!formData.title.trim()) {
       alert('Please enter a title for your clip');
       return;
     }
 
-    if (formData.profit_amount <= 0) {
-      alert('Please enter a valid profit amount');
+    if (formData.amount <= 0) {
+      alert('Please enter a valid cashout amount');
       return;
     }
 
@@ -112,7 +202,8 @@ const ClipUpload: React.FC = () => {
 
       const clipData: CreateClipRequest = {
         ...formData,
-        video_file: videoFile
+        video: videoFile,
+        thumbnail: thumbnailFile || undefined
       };
       
       await api.createClip(clipData);
@@ -235,6 +326,47 @@ const ClipUpload: React.FC = () => {
           )}
         </div>
 
+        {/* Product Selection */}
+        <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>Product</h3>
+          <p style={{ fontSize: '14px', color: '#6b6b7d', marginBottom: '16px' }}>
+            Select the product this cashout clip is related to
+          </p>
+          
+          {loadingProducts ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#6b6b7d' }}>
+              <div style={{ width: '16px', height: '16px', border: '2px solid #6b6b7d', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              Loading products...
+            </div>
+          ) : (
+            <select
+              value={formData.product_id}
+              onChange={(e) => setFormData(prev => ({ ...prev, product_id: e.target.value }))}
+              required
+              style={{
+                width: '100%',
+                padding: '16px',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '16px',
+                color: 'white',
+                fontSize: '14px',
+                fontFamily: 'inherit',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="" style={{ backgroundColor: '#0d0d12', color: 'white' }}>
+                Select a product...
+              </option>
+              {products.map(product => (
+                <option key={product.id} value={product.id} style={{ backgroundColor: '#0d0d12', color: 'white' }}>
+                  {product.name} - ${product.price.toFixed(2)} ({product.category})
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
         {/* Title */}
         <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
           <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>Title</h3>
@@ -257,15 +389,15 @@ const ClipUpload: React.FC = () => {
           />
         </div>
 
-        {/* Profit Amount */}
+        {/* Cashout Amount */}
         <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>Profit Amount</h3>
+          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>Cashout Amount</h3>
           <div style={{ position: 'relative' }}>
             <DollarSign size={20} color="#6b6b7d" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
               type="number"
-              value={formData.profit_amount || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, profit_amount: parseFloat(e.target.value) || 0 }))}
+              value={formData.amount || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
               placeholder="0.00"
               min="0"
               step="0.01"
@@ -283,7 +415,58 @@ const ClipUpload: React.FC = () => {
             />
           </div>
           <p style={{ fontSize: '12px', color: '#6b6b7d', marginTop: '8px' }}>
-            Enter the profit amount shown in your cashout proof
+            Enter the amount you successfully cashed out
+          </p>
+        </div>
+
+        {/* Cashout Type */}
+        <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>Cashout Method</h3>
+          <select
+            value={formData.cashout_type}
+            onChange={(e) => setFormData(prev => ({ ...prev, cashout_type: e.target.value as CashoutClipType }))}
+            required
+            style={{
+              width: '100%',
+              padding: '16px',
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '16px',
+              color: 'white',
+              fontSize: '14px',
+              fontFamily: 'inherit',
+              cursor: 'pointer'
+            }}
+          >
+            {Object.values(CashoutClipType).map(type => (
+              <option key={type} value={type} style={{ backgroundColor: '#0d0d12', color: 'white' }}>
+                {getCashoutTypeLabel(type)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Payment Method */}
+        <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>Payment Method (Optional)</h3>
+          <input
+            type="text"
+            value={formData.payment_method || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, payment_method: e.target.value }))}
+            placeholder="e.g., Chase Bank, Bitcoin Wallet, etc."
+            style={{
+              width: '100%',
+              padding: '16px',
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '16px',
+              color: 'white',
+              fontSize: '14px',
+              fontFamily: 'inherit'
+            }}
+          />
+          <p style={{ fontSize: '12px', color: '#6b6b7d', marginTop: '8px' }}>
+            Specify the bank, platform, or service used
           </p>
         </div>
 
@@ -386,7 +569,7 @@ const ClipUpload: React.FC = () => {
           </button>
           <button
             type="submit"
-            disabled={submitting || !videoFile || !formData.title.trim() || formData.profit_amount <= 0}
+            disabled={submitting || !videoFile || !formData.title.trim() || !formData.product_id || formData.amount <= 0}
             style={{
               padding: '16px 32px',
               backgroundColor: submitting ? 'rgba(255, 0, 242, 0.5)' : '#ff00f2',
@@ -395,7 +578,7 @@ const ClipUpload: React.FC = () => {
               color: 'white',
               fontWeight: '800',
               fontSize: '16px',
-              cursor: submitting || !videoFile || !formData.title.trim() || formData.profit_amount <= 0 ? 'not-allowed' : 'pointer',
+              cursor: submitting || !videoFile || !formData.title.trim() || !formData.product_id || formData.amount <= 0 ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '8px'

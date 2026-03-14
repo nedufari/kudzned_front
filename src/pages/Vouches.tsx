@@ -10,10 +10,10 @@ import {
   Search
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { api } from '../services/api';
+import { api, VouchTag, VouchStatus, VouchHelpfulnessType } from '../services/api';
 import type { Vouch } from '../services/api';
 
-const VouchCard = ({ vouch }: { vouch: Vouch }) => {
+const VouchCard = ({ vouch, getTagLabel }: { vouch: Vouch; getTagLabel: (tag: VouchTag) => string }) => {
   const navigate = useNavigate();
   
   return (
@@ -30,8 +30,8 @@ const VouchCard = ({ vouch }: { vouch: Vouch }) => {
           </div>
           <div>
             <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{vouch.user.username}</h4>
-            <span className={vouch.verified ? 'tag-green' : 'tag-gray'} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '8px' }}>
-              {vouch.verified ? 'Verified Buyer' : 'Unverified'}
+            <span className={vouch.status === VouchStatus.APPROVED ? 'tag-green' : 'tag-gray'} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '8px' }}>
+              {vouch.status === VouchStatus.APPROVED ? 'Verified Purchase' : 'Pending Review'}
             </span>
           </div>
         </div>
@@ -55,7 +55,7 @@ const VouchCard = ({ vouch }: { vouch: Vouch }) => {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
           {vouch.tags.slice(0, 3).map((tag, i) => (
             <span key={i} className="tag tag-cyan">
-              {tag}
+              {getTagLabel(tag)}
             </span>
           ))}
           {vouch.tags.length > 3 && (
@@ -79,6 +79,11 @@ const VouchCard = ({ vouch }: { vouch: Vouch }) => {
               {vouch.helpful_count} helpful
             </span>
           )}
+          {vouch.not_helpful_count > 0 && (
+            <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: '700' }}>
+              {vouch.not_helpful_count} not helpful
+            </span>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#00f2ff', fontSize: '12px', fontWeight: '800' }}>
              Details <ChevronRight size={14} />
           </div>
@@ -94,13 +99,28 @@ const Vouches: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Helper function to convert enum values to readable labels
+  const getTagLabel = (tag: VouchTag): string => {
+    const labels: Record<VouchTag, string> = {
+      [VouchTag.FAST_DELIVERY]: 'Fast Delivery',
+      [VouchTag.HIGH_BALANCE]: 'High Balance',
+      [VouchTag.SECURE]: 'Secure',
+      [VouchTag.RELIABLE]: 'Reliable',
+      [VouchTag.GOOD_SUPPORT]: 'Good Support',
+      [VouchTag.EASY_CASHOUT]: 'Easy Cashout',
+      [VouchTag.VERIFIED_SELLER]: 'Verified Seller'
+    };
+    return labels[tag] || tag;
+  };
+
   const loadVouches = async () => {
     setLoading(true);
     try {
       const data = await api.getVouches({ 
-        sort_by: 'date', 
-        sort_order: 'desc',
-        limit: 20 
+        sort_by: 'created_at', 
+        sort_order: 'DESC',
+        limit: 20,
+        status: VouchStatus.APPROVED // Only show approved vouches by default
       });
       setVouches(data);
     } catch (error) {
@@ -135,10 +155,10 @@ const Vouches: React.FC = () => {
     searchQuery === '' || 
     vouch.comment.toLowerCase().includes(searchQuery.toLowerCase()) ||
     vouch.user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    vouch.product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    vouch.product.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalVerifiedVouches = vouches.filter(v => v.verified).length;
+  const totalVerifiedVouches = vouches.filter(v => v.status === VouchStatus.APPROVED).length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -207,7 +227,7 @@ const Vouches: React.FC = () => {
       {!loading && filteredVouches.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '24px' }}>
           {filteredVouches.map((vouch) => (
-            <VouchCard key={vouch.id} vouch={vouch} />
+            <VouchCard key={vouch.id} vouch={vouch} getTagLabel={getTagLabel} />
           ))}
         </div>
       )}

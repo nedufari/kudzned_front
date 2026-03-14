@@ -12,7 +12,7 @@ import {
   Flag,
   Share2
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, VouchTag, VouchStatus, VouchHelpfulnessType } from '../services/api';
 import type { Vouch } from '../services/api';
 
 const VouchDetail: React.FC = () => {
@@ -21,6 +21,20 @@ const VouchDetail: React.FC = () => {
   const [vouch, setVouch] = useState<Vouch | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasVotedHelpful, setHasVotedHelpful] = useState(false);
+
+  // Helper function to convert enum values to readable labels
+  const getTagLabel = (tag: VouchTag): string => {
+    const labels: Record<VouchTag, string> = {
+      [VouchTag.FAST_DELIVERY]: 'Fast Delivery',
+      [VouchTag.HIGH_BALANCE]: 'High Balance',
+      [VouchTag.SECURE]: 'Secure',
+      [VouchTag.RELIABLE]: 'Reliable',
+      [VouchTag.GOOD_SUPPORT]: 'Good Support',
+      [VouchTag.EASY_CASHOUT]: 'Easy Cashout',
+      [VouchTag.VERIFIED_SELLER]: 'Verified Seller'
+    };
+    return labels[tag] || tag;
+  };
 
   useEffect(() => {
     const loadVouch = async () => {
@@ -44,12 +58,14 @@ const VouchDetail: React.FC = () => {
     if (!vouch || hasVotedHelpful) return;
 
     try {
-      await api.markVouchHelpful(vouch.id, helpful);
+      const voteType = helpful ? VouchHelpfulnessType.HELPFUL : VouchHelpfulnessType.NOT_HELPFUL;
+      await api.voteVouchHelpfulness(vouch.id, voteType);
       setHasVotedHelpful(true);
       // Update local state
       setVouch(prev => prev ? {
         ...prev,
-        helpful_count: helpful ? prev.helpful_count + 1 : prev.helpful_count
+        helpful_count: helpful ? prev.helpful_count + 1 : prev.helpful_count,
+        not_helpful_count: !helpful ? prev.not_helpful_count + 1 : prev.not_helpful_count
       } : null);
     } catch (error) {
       console.error('Error marking vouch helpful:', error);
@@ -124,8 +140,8 @@ const VouchDetail: React.FC = () => {
                         />
                       ))}
                    </div>
-                   <span className={vouch.verified ? 'tag-green' : 'tag-gray'}>
-                     {vouch.verified ? 'Verified Purchase' : 'Unverified'}
+                   <span className={vouch.status === VouchStatus.APPROVED ? 'tag-green' : 'tag-gray'}>
+                     {vouch.status === VouchStatus.APPROVED ? 'Verified Purchase' : 'Pending Review'}
                    </span>
                 </div>
              </div>
@@ -140,7 +156,7 @@ const VouchDetail: React.FC = () => {
                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '32px' }}>
                   {vouch.tags.map((tag, i) => (
                      <span key={i} className="tag tag-cyan">
-                        #{tag}
+                        #{getTagLabel(tag)}
                      </span>
                   ))}
                </div>

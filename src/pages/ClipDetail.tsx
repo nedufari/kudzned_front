@@ -12,7 +12,7 @@ import {
   User,
   Flag
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, CashoutClipType, CashoutClipStatus } from '../services/api';
 import type { CashoutClip } from '../services/api';
 
 const ClipDetail: React.FC = () => {
@@ -49,8 +49,23 @@ const ClipDetail: React.FC = () => {
     return views.toLocaleString();
   };
 
-  const formatProfit = (amount: number) => {
+  const formatAmount = (amount: number) => {
     return `+$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  const getCashoutTypeLabel = (type: CashoutClipType): string => {
+    const labels: Record<CashoutClipType, string> = {
+      [CashoutClipType.BANK_TRANSFER]: 'Bank Transfer',
+      [CashoutClipType.CRYPTO_WITHDRAWAL]: 'Crypto',
+      [CashoutClipType.PAYPAL]: 'PayPal',
+      [CashoutClipType.CASHAPP]: 'CashApp',
+      [CashoutClipType.VENMO]: 'Venmo',
+      [CashoutClipType.ZELLE]: 'Zelle',
+      [CashoutClipType.WIRE_TRANSFER]: 'Wire Transfer',
+      [CashoutClipType.CHECK]: 'Check',
+      [CashoutClipType.OTHER]: 'Other'
+    };
+    return labels[type] || type;
   };
 
   if (loading) {
@@ -96,20 +111,31 @@ const ClipDetail: React.FC = () => {
         {/* Left - Video Player & Content */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
           <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
-             <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img 
-                  src={clip.thumbnail_url || `https://images.unsplash.com/photo-1542382257-80dee2700140?auto=format&fit=crop&q=80&w=1200`} 
-                  alt="Video Preview" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.4 }} 
-                />
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#00f2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 40px rgba(0, 242, 255, 0.4)' }}>
-                        <Play size={40} fill="currentColor" />
-                    </div>
-                </div>
-                <div style={{ position: 'absolute', bottom: '24px', left: '24px', backgroundColor: 'rgba(0,0,0,0.6)', padding: '8px 16px', borderRadius: '12px', fontSize: '12px', fontWeight: '800' }}>
-                   {formatDuration(clip.duration)}
-                </div>
+             <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: '#000' }}>
+               {clip.video_url ? (
+                 <video
+                   src={clip.video_url}
+                   poster={clip.thumbnail_url || undefined}
+                   controls
+                   style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                 />
+               ) : (
+                 <>
+                   <img
+                     src={clip.thumbnail_url || `https://images.unsplash.com/photo-1542382257-80dee2700140?auto=format&fit=crop&q=80&w=1200`}
+                     alt="Video Preview"
+                     style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.4 }}
+                   />
+                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                     <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#00f2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 40px rgba(0, 242, 255, 0.4)' }}>
+                       <Play size={40} fill="currentColor" />
+                     </div>
+                   </div>
+                 </>
+               )}
+               <div style={{ position: 'absolute', bottom: '12px', left: '12px', backgroundColor: 'rgba(0,0,0,0.7)', padding: '6px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: '800', pointerEvents: 'none' }}>
+                 {formatDuration(clip.duration_seconds)}
+               </div>
              </div>
              
              <div style={{ padding: '40px' }}>
@@ -143,7 +169,7 @@ const ClipDetail: React.FC = () => {
                    </div>
                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b6b7d', fontSize: '14px', fontWeight: '700' }}>
                       <Eye size={16} />
-                      {formatViews(clip.view_count)} Views
+                      {formatViews(clip.views_count)} Views
                    </div>
                 </div>
 
@@ -172,11 +198,11 @@ const ClipDetail: React.FC = () => {
               <div style={{ width: '64px', height: '64px', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', color: '#10b981' }}>
                  <DollarSign size={32} />
               </div>
-              <h4 style={{ fontSize: '16px', fontWeight: '800', color: '#6b6b7d', textTransform: 'uppercase', marginBottom: '8px' }}>Verified Profit</h4>
-              <p style={{ fontSize: '32px', fontWeight: '950', color: '#10b981' }}>{formatProfit(clip.profit_amount)}</p>
+              <h4 style={{ fontSize: '16px', fontWeight: '800', color: '#6b6b7d', textTransform: 'uppercase', marginBottom: '8px' }}>Cashout Amount</h4>
+              <p style={{ fontSize: '32px', fontWeight: '950', color: '#10b981' }}>{formatAmount(clip.amount)}</p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#10b981', fontSize: '12px', fontWeight: '800', marginTop: '12px' }}>
                  <ShieldCheck size={16} />
-                 PLATFORM VERIFIED
+                 {clip.status === CashoutClipStatus.APPROVED ? 'VERIFIED' : 'PENDING REVIEW'}
               </div>
            </div>
 
@@ -186,11 +212,25 @@ const ClipDetail: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '14px', color: '#6b6b7d' }}>Duration</span>
-                  <span style={{ fontSize: '14px', fontWeight: '800' }}>{formatDuration(clip.duration)}</span>
+                  <span style={{ fontSize: '14px', fontWeight: '800' }}>{formatDuration(clip.duration_seconds)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '14px', color: '#6b6b7d' }}>Views</span>
-                  <span style={{ fontSize: '14px', fontWeight: '800' }}>{formatViews(clip.view_count)}</span>
+                  <span style={{ fontSize: '14px', fontWeight: '800' }}>{formatViews(clip.views_count)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '14px', color: '#6b6b7d' }}>Method</span>
+                  <span style={{ fontSize: '14px', fontWeight: '800' }}>{getCashoutTypeLabel(clip.cashout_type)}</span>
+                </div>
+                {clip.payment_method && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '14px', color: '#6b6b7d' }}>Platform</span>
+                    <span style={{ fontSize: '14px', fontWeight: '800' }}>{clip.payment_method}</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '14px', color: '#6b6b7d' }}>Likes</span>
+                  <span style={{ fontSize: '14px', fontWeight: '800' }}>{clip.likes_count}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '14px', color: '#6b6b7d' }}>Uploaded</span>

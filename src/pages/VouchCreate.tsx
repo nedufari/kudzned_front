@@ -7,9 +7,10 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Search
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, VouchTag } from '../services/api';
 import type { Product, CreateVouchRequest } from '../services/api';
 
 const VouchCreate: React.FC = () => {
@@ -18,6 +19,11 @@ const VouchCreate: React.FC = () => {
   const productId = searchParams.get('product_id');
   
   const [product, setProduct] = useState<Product | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [loadingProducts, setLoadingProducts] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<CreateVouchRequest>({
@@ -28,16 +34,52 @@ const VouchCreate: React.FC = () => {
   });
   const [proofImage, setProofImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [availableTags] = useState([
-    'Fast Delivery', 'High Balance', 'Secure', 'Reliable', 'Good Support',
-    'Easy Process', 'Quick Response', 'Professional', 'Recommended', 'Quality Service'
-  ]);
+  const [availableTags] = useState(Object.values(VouchTag));
+
+  // Helper function to convert enum values to readable labels
+  const getTagLabel = (tag: VouchTag): string => {
+    const labels: Record<VouchTag, string> = {
+      [VouchTag.FAST_DELIVERY]: 'Fast Delivery',
+      [VouchTag.HIGH_BALANCE]: 'High Balance',
+      [VouchTag.SECURE]: 'Secure',
+      [VouchTag.RELIABLE]: 'Reliable',
+      [VouchTag.GOOD_SUPPORT]: 'Good Support',
+      [VouchTag.EASY_CASHOUT]: 'Easy Cashout',
+      [VouchTag.VERIFIED_SELLER]: 'Verified Seller'
+    };
+    return labels[tag] || tag;
+  };
 
   useEffect(() => {
+    loadProducts();
     if (productId) {
       loadProduct();
     }
+    
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('[data-dropdown]')) {
+        setShowDropdown(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [productId]);
+
+  const loadProducts = async () => {
+    setLoadingProducts(true);
+    try {
+      const data = await api.getProducts({ limit: 100 }); // Get all products
+      setProducts(data);
+      setFilteredProducts(data);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
 
   const loadProduct = async () => {
     if (!productId) return;
@@ -51,6 +93,29 @@ const VouchCreate: React.FC = () => {
       console.error('Error loading product:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleProductSelect = (selectedProductId: string) => {
+    const selectedProduct = products.find(p => p.id === selectedProductId);
+    setProduct(selectedProduct || null);
+    setFormData(prev => ({ ...prev, product_id: selectedProductId }));
+    setProductSearch(selectedProduct?.name || '');
+    setShowDropdown(false);
+  };
+
+  const handleProductSearch = (searchTerm: string) => {
+    setProductSearch(searchTerm);
+    setShowDropdown(true);
+    
+    if (searchTerm.trim() === '') {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredProducts(filtered);
     }
   };
 
@@ -76,7 +141,7 @@ const VouchCreate: React.FC = () => {
     }
   };
 
-  const toggleTag = (tag: string) => {
+  const toggleTag = (tag: VouchTag) => {
     setFormData(prev => ({
       ...prev,
       tags: prev.tags?.includes(tag) 
@@ -118,7 +183,21 @@ const VouchCreate: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', maxWidth: '800px', margin: '0 auto' }}>
+    <>
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          
+          select option {
+            background-color: #0d0d12 !important;
+            color: white !important;
+          }
+        `}
+      </style>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', maxWidth: '800px', margin: '0 auto' }}>
       <button 
         onClick={() => navigate('/vouches')}
         style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#a0a0b8', fontWeight: '700', fontSize: '14px' }}
@@ -135,20 +214,103 @@ const VouchCreate: React.FC = () => {
       </div>
 
       {/* Product Selection */}
-      {!productId && (
-        <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>Select Product</h3>
-          <p style={{ color: '#6b6b7d', fontSize: '14px' }}>
-            You need to select a product you've purchased to write a vouch. 
-            <button 
-              onClick={() => navigate('/shop')}
-              style={{ color: '#00f2ff', marginLeft: '8px', textDecoration: 'underline' }}
-            >
-              Browse products
-            </button>
-          </p>
-        </div>
-      )}
+      <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>Select Product</h3>
+        <p style={{ color: '#6b6b7d', fontSize: '14px', marginBottom: '20px' }}>
+          Search and choose the product you want to review
+        </p>
+        
+        {loadingProducts ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#6b6b7d' }}>
+            <div style={{ width: '16px', height: '16px', border: '2px solid #6b6b7d', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            Loading products...
+          </div>
+        ) : (
+          <div style={{ position: 'relative' }} data-dropdown>
+            <Search size={20} color="#6b6b7d" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', zIndex: 1 }} />
+            <input
+              type="text"
+              placeholder="Search for a product..."
+              value={productSearch}
+              onChange={(e) => handleProductSearch(e.target.value)}
+              onFocus={() => setShowDropdown(true)}
+              style={{
+                width: '100%',
+                padding: '16px 16px 16px 48px',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '16px',
+                color: 'white',
+                fontSize: '14px',
+                fontFamily: 'inherit'
+              }}
+            />
+            
+            {showDropdown && filteredProducts.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                backgroundColor: '#0d0d12',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '16px',
+                marginTop: '8px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                zIndex: 10,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+              }}>
+                {filteredProducts.slice(0, 10).map(prod => (
+                  <div
+                    key={prod.id}
+                    onClick={() => handleProductSelect(prod.id)}
+                    style={{
+                      padding: '12px 16px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid rgba(255,255,255,0.05)',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <div style={{ fontWeight: '700', fontSize: '14px', marginBottom: '4px' }}>
+                      {prod.name}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#6b6b7d' }}>
+                      {prod.category} • ${prod.price.toFixed(2)}
+                    </div>
+                  </div>
+                ))}
+                {filteredProducts.length > 10 && (
+                  <div style={{ padding: '12px 16px', fontSize: '12px', color: '#6b6b7d', textAlign: 'center' }}>
+                    +{filteredProducts.length - 10} more results...
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {showDropdown && filteredProducts.length === 0 && productSearch.trim() !== '' && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                backgroundColor: '#0d0d12',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '16px',
+                marginTop: '8px',
+                padding: '16px',
+                textAlign: 'center',
+                color: '#6b6b7d',
+                fontSize: '14px'
+              }}>
+                No products found matching "{productSearch}"
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Product Info */}
       {product && (
@@ -254,7 +416,7 @@ const VouchCreate: React.FC = () => {
                   transition: 'all 0.2s'
                 }}
               >
-                {tag}
+                {getTagLabel(tag)}
               </button>
             ))}
           </div>
@@ -378,6 +540,7 @@ const VouchCreate: React.FC = () => {
         </div>
       </form>
     </div>
+    </>
   );
 };
 

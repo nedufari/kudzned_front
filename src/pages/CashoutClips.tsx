@@ -11,7 +11,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { api } from '../services/api';
+import { api, CashoutClipType, CashoutClipStatus } from '../services/api';
 import type { CashoutClip } from '../services/api';
 
 const CashoutClips: React.FC = () => {
@@ -23,7 +23,12 @@ const CashoutClips: React.FC = () => {
   const loadClips = async () => {
     setLoading(true);
     try {
-      const data = await api.getClips({ sort_by: 'date', sort_order: 'desc', limit: 20 });
+      const data = await api.getClips({ 
+        sort_by: 'created_at', 
+        sort_order: 'DESC', 
+        limit: 20,
+        status: CashoutClipStatus.APPROVED // Only show approved clips
+      });
       setClips(data);
     } catch (error) {
       console.error('Error loading clips:', error);
@@ -40,11 +45,12 @@ const CashoutClips: React.FC = () => {
     searchQuery === '' || 
     clip.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     clip.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    clip.user.username.toLowerCase().includes(searchQuery.toLowerCase())
+    clip.user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    clip.payment_method?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalViews = clips.reduce((sum, clip) => sum + clip.view_count, 0);
-  const totalProfit = clips.reduce((sum, clip) => sum + clip.profit_amount, 0);
+  const totalViews = clips.reduce((sum, clip) => sum + clip.views_count, 0);
+  const totalAmount = clips.reduce((sum, clip) => sum + clip.amount, 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -56,7 +62,7 @@ const CashoutClips: React.FC = () => {
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '10px 16px', borderRadius: '14px', fontSize: '12px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <TrendingUp size={16} />
-            ${totalProfit.toLocaleString()} Total Proven
+            ${totalAmount.toLocaleString()} Total Proven
           </div>
           <div style={{ backgroundColor: 'rgba(0, 242, 255, 0.1)', color: '#00f2ff', padding: '10px 16px', borderRadius: '14px', fontSize: '12px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Eye size={16} />
@@ -149,8 +155,23 @@ const ClipCard = ({ clip }: { clip: CashoutClip }) => {
     return views.toString();
   };
 
-  const formatProfit = (amount: number) => {
+  const formatAmount = (amount: number) => {
     return `+$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  const getCashoutTypeLabel = (type: CashoutClipType): string => {
+    const labels: Record<CashoutClipType, string> = {
+      [CashoutClipType.BANK_TRANSFER]: 'Bank Transfer',
+      [CashoutClipType.CRYPTO_WITHDRAWAL]: 'Crypto',
+      [CashoutClipType.PAYPAL]: 'PayPal',
+      [CashoutClipType.CASHAPP]: 'CashApp',
+      [CashoutClipType.VENMO]: 'Venmo',
+      [CashoutClipType.ZELLE]: 'Zelle',
+      [CashoutClipType.WIRE_TRANSFER]: 'Wire Transfer',
+      [CashoutClipType.CHECK]: 'Check',
+      [CashoutClipType.OTHER]: 'Other'
+    };
+    return labels[type] || type;
   };
 
   return (
@@ -173,7 +194,7 @@ const ClipCard = ({ clip }: { clip: CashoutClip }) => {
           </div>
         </div>
         <div style={{ position: 'absolute', top: '12px', right: '12px', backgroundColor: 'rgba(0,0,0,0.6)', padding: '6px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', color: 'white' }}>
-          {formatDuration(clip.duration)}
+          {formatDuration(clip.duration_seconds)}
         </div>
       </div>
 
@@ -186,7 +207,7 @@ const ClipCard = ({ clip }: { clip: CashoutClip }) => {
          </div>
          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
            <Eye size={14} />
-           {formatViews(clip.view_count)} Views
+           {formatViews(clip.views_count)} Views
          </div>
       </div>
 
@@ -204,11 +225,14 @@ const ClipCard = ({ clip }: { clip: CashoutClip }) => {
              <DollarSign size={18} />
            </div>
            <div>
-             <p style={{ fontSize: '10px', color: '#6b6b7d', textTransform: 'uppercase' }}>Profit Made</p>
-             <p style={{ fontSize: '15px', fontWeight: '900', color: '#10b981' }}>{formatProfit(clip.profit_amount)}</p>
+             <p style={{ fontSize: '10px', color: '#6b6b7d', textTransform: 'uppercase' }}>Amount Cashed Out</p>
+             <p style={{ fontSize: '15px', fontWeight: '900', color: '#10b981' }}>{formatAmount(clip.amount)}</p>
            </div>
          </div>
-         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: '4px' }}>
+           <span style={{ fontSize: '10px', color: '#6b6b7d', textTransform: 'uppercase' }}>
+             {getCashoutTypeLabel(clip.cashout_type)}
+           </span>
            <span style={{ fontSize: '11px', color: '#6b6b7d', fontWeight: '700' }}>
              by {clip.user.username}
            </span>
