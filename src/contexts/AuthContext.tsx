@@ -35,7 +35,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Start as false, no auto-loading
+  const [isLoading] = useState(false); // Start as false, no auto-loading
 
   const isAuthenticated = !!user;
 

@@ -11,41 +11,11 @@ import {
 } from 'lucide-react';
 
 // Define types locally to avoid API import issues
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  stock: number;
-  created_at: string;
-  updated_at: string;
-}
 
-interface CartItem {
-  id: string;
-  product_id: string;
-  quantity: number;
-  price: number;
-  product: Product;
-}
 
-interface Cart {
-  id: string;
-  user_id: string;
-  items: CartItem[];
-  total: number;
-  created_at: string;
-  updated_at: string;
-}
 
-interface User {
-  id: string;
-  email: string;
-  username: string;
-  role: string;
-  status: string;
-}
+
+
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();

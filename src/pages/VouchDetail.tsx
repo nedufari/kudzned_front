@@ -8,7 +8,6 @@ import {
   User,
   ExternalLink,
   ThumbsUp,
-  ThumbsDown,
   Flag,
   Share2
 } from 'lucide-react';
@@ -214,7 +213,7 @@ const VouchDetail: React.FC = () => {
            <div className="card">
               <h4 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '20px' }}>Product Reviewed</h4>
               <div style={{ backgroundColor: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                 <p style={{ fontSize: '15px', fontWeight: '800', marginBottom: '8px' }}>{vouch.product.name}</p>
+                 <p style={{ fontSize: '15px', fontWeight: '800', marginBottom: '8px' }}>{vouch.product.title}</p>
                  <p style={{ fontSize: '12px', color: '#6b6b7d', marginBottom: '12px', textTransform: 'uppercase' }}>
                    {vouch.product.category}
                  </p>

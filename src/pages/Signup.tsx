@@ -25,7 +25,8 @@ const Signup: React.FC = () => {
     confirmPassword: '',
     username: '',
     firstName: '',
-    lastName: ''
+    lastName: '',
+    phone: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');

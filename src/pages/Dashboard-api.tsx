@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { User } from '../services/api';
-import { Loader2, LogOut, User as UserIcon, Shield, Mail, Calendar } from 'lucide-react';
+import type { User } from '../services/api';
+import { Loader2, LogOut, Shield } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+  const [, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -28,10 +28,9 @@ const Dashboard: React.FC = () => {
           id: 'temp-id',
           email: 'Loading...',
           username: 'Loading...',
-          first_name: 'Loading...',
-          last_name: 'Loading...',
-          role: 'customer'
-        });
+          role: 'customer',
+          status: 'active'
+        } as unknown as User);
         
       } catch (err) {
         console.error('Failed to load user data:', err);

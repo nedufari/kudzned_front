@@ -10,7 +10,7 @@ import {
   Search
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { api, VouchTag, VouchStatus, VouchHelpfulnessType } from '../services/api';
+import { api, VouchTag, VouchStatus } from '../services/api';
 import type { Vouch } from '../services/api';
 
 const VouchCard = ({ vouch, getTagLabel }: { vouch: Vouch; getTagLabel: (tag: VouchTag) => string }) => {

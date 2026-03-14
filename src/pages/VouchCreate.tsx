@@ -3,10 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Star, 
-  Upload, 
   X,
   CheckCircle2,
-  AlertCircle,
   Image as ImageIcon,
   Search
 } from 'lucide-react';
@@ -24,7 +22,7 @@ const VouchCreate: React.FC = () => {
   const [productSearch, setProductSearch] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<CreateVouchRequest>({
     product_id: productId || '',
