@@ -12,7 +12,7 @@ import {
   RefreshCw,
   ShoppingBag
 } from 'lucide-react';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 import { toast } from '../utils/toast';
 
 // Define Order interfaces locally to avoid import issues
@@ -60,7 +60,7 @@ const Orders: React.FC = () => {
     const loadOrders = async () => {
       try {
         console.log('Loading orders...');
-        const ordersData = await apiClient.getOrders(1, 20);
+        const ordersData = await api.getOrders(1, 20);
         console.log('Orders loaded:', ordersData);
         setOrders(ordersData || []); // Ensure we always have an array
       } catch (error) {
@@ -89,7 +89,7 @@ const Orders: React.FC = () => {
     setLoading(true);
     try {
       console.log('Refreshing orders...');
-      const ordersData = await apiClient.getOrders(1, 20);
+      const ordersData = await api.getOrders(1, 20);
       console.log('Orders refreshed:', ordersData);
       setOrders(ordersData || []); // Ensure we always have an array
       toast.success(`Refreshed ${(ordersData || []).length} orders!`);

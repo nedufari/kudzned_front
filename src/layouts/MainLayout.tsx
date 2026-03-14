@@ -18,7 +18,7 @@ import {
   ShoppingCart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 
 const SidebarLink = ({ to, icon: Icon, label, badge, onClick }: { to: string, icon: any, label: string, badge?: string, onClick?: () => void }) => (
   <NavLink 
@@ -142,8 +142,8 @@ const MainLayout: React.FC = () => {
   useEffect(() => {
     const loadCartCount = async () => {
       try {
-        const cart = await apiClient.getCart();
-        const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+        const cart = await api.getCart();
+        const totalItems = cart.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
         setCartItemCount(totalItems);
       } catch (error) {
         console.error('Failed to load cart count (MainLayout):', error);
@@ -154,7 +154,7 @@ const MainLayout: React.FC = () => {
 
     const loadWalletBalance = async () => {
       try {
-        const wallet = await apiClient.getWallet();
+        const wallet = await api.getWallet();
         const balance = (parseFloat(wallet.balance) / 100).toFixed(2); // Convert from satoshis to dollars
         setWalletBalance(balance);
       } catch (error) {
@@ -206,8 +206,8 @@ const MainLayout: React.FC = () => {
       // Refresh cart count when visiting cart page
       const loadCartCount = async () => {
         try {
-          const cart = await apiClient.getCart();
-          const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+          const cart = await api.getCart();
+          const totalItems = cart.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
           setCartItemCount(totalItems);
         } catch (error) {
           console.error('Failed to load cart count (MainLayout):', error);
@@ -222,7 +222,7 @@ const MainLayout: React.FC = () => {
   const handleLogout = () => {
     console.log('Logging out...');
     // Clear token and redirect
-    apiClient.logout();
+    api.logout();
     console.log('Token cleared, redirecting to login');
     navigate('/login');
   };

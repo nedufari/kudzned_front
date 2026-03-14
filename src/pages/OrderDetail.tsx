@@ -11,7 +11,7 @@ import {
   Clock,
   XCircle
 } from 'lucide-react';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 import { toast } from '../utils/toast';
 
 // Define Order interfaces locally to avoid import issues
@@ -66,7 +66,7 @@ const OrderDetail: React.FC = () => {
 
       try {
         console.log('Loading order:', id);
-        const orderData = await apiClient.getOrder(id);
+        const orderData = await api.getOrder(id);
         console.log('Order loaded:', orderData);
         setOrder(orderData);
       } catch (error) {
@@ -96,7 +96,7 @@ const OrderDetail: React.FC = () => {
     setLoading(true);
     try {
       console.log('Refreshing order:', id);
-      const orderData = await apiClient.getOrder(id);
+      const orderData = await api.getOrder(id);
       console.log('Order refreshed:', orderData);
       setOrder(orderData);
       toast.success('Order details refreshed!');

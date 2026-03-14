@@ -12,7 +12,7 @@ import {
   Lock,
   Loader2
 } from 'lucide-react';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 import { toast } from '../utils/toast';
 
 interface Product {
@@ -47,7 +47,7 @@ const ProductDetail: React.FC = () => {
 
       try {
         console.log('Loading product:', id);
-        const productData = await apiClient.getProduct(id);
+        const productData = await api.getProduct(id);
         console.log('Product loaded:', productData);
         
         setProduct(productData);
@@ -80,7 +80,7 @@ const ProductDetail: React.FC = () => {
     
     setAddingToCart(true);
     try {
-      await apiClient.addToCart(product.id, 1);
+      await api.addToCart(product.id, 1);
       // Navigate to cart after successful add
       navigate('/cart');
     } catch (error) {

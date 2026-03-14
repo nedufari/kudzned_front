@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -7,59 +7,126 @@ import {
   Calendar,
   User,
   ExternalLink,
-  ThumbsUp
+  ThumbsUp,
+  ThumbsDown,
+  Flag,
+  Share2
 } from 'lucide-react';
+import { api } from '../services/api';
+import type { Vouch } from '../services/api';
 
 const VouchDetail: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [vouch, setVouch] = useState<Vouch | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [hasVotedHelpful, setHasVotedHelpful] = useState(false);
 
-  // Mock data for a single vouch
-  const vouch = {
-    id: id || 'VCH-229-X',
-    user: 'Nedu Franco',
-    date: 'Oct 14, 2024',
-    rating: 5,
-    comment: 'Just finished my first high-balance log purchase. The delivery was instant and the balance was exactly as advertised. I checked the log with a dedicated RDP and it was completely live. Highly recommend KUDZNED for anyone looking for reliability.',
-    product: 'Chase High-Balance Personal Log',
-    proofImage: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&q=80&w=800',
-    verified: true,
-    tags: ['Fast Delivery', 'High Balance', 'Secure']
+  useEffect(() => {
+    const loadVouch = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      try {
+        const data = await api.getVouch(id);
+        setVouch(data);
+      } catch (error) {
+        console.error('Error loading vouch:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVouch();
+  }, [id]);
+
+  const handleMarkHelpful = async (helpful: boolean) => {
+    if (!vouch || hasVotedHelpful) return;
+
+    try {
+      await api.markVouchHelpful(vouch.id, helpful);
+      setHasVotedHelpful(true);
+      // Update local state
+      setVouch(prev => prev ? {
+        ...prev,
+        helpful_count: helpful ? prev.helpful_count + 1 : prev.helpful_count
+      } : null);
+    } catch (error) {
+      console.error('Error marking vouch helpful:', error);
+    }
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <div style={{ color: '#6b6b7d', fontSize: '16px' }}>Loading vouch...</div>
+      </div>
+    );
+  }
+
+  if (!vouch) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' }}>
+        <div style={{ width: '64px', height: '64px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Star size={32} color="#6b6b7d" />
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <h4 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '8px' }}>Vouch not found</h4>
+          <p style={{ color: '#6b6b7d', fontSize: '14px', marginBottom: '24px' }}>
+            This vouch may have been removed or doesn't exist.
+          </p>
+          <button
+            onClick={() => navigate('/vouches')}
+            className="btn-primary"
+          >
+            Back to Vouches
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       <button 
         onClick={() => navigate('/vouches')}
         style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#a0a0b8', fontWeight: '700', fontSize: '14px' }}
-        className="hover:text-[#00f2ff]"
       >
         <ArrowLeft size={18} />
         Back to Vouches
       </button>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1.2fr 0.8fr))', gap: '40px' }} className="main-grid">
+      <div className="main-grid">
         {/* Left - Vouch Content */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-          <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '32px', padding: '40px' }}>
+          <div className="card">
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '32px' }}>
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                    <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(0, 242, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <User size={30} color="#00f2ff" />
                    </div>
                    <div>
-                      <h3 style={{ fontSize: '20px', fontWeight: '800' }}>{vouch.user}</h3>
+                      <h3 style={{ fontSize: '20px', fontWeight: '800' }}>{vouch.user.username}</h3>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b6b7d', fontSize: '14px' }}>
                          <Calendar size={14} />
-                         {vouch.date}
+                         {new Date(vouch.created_at).toLocaleDateString()}
                       </div>
                    </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                    <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                      {[1, 2, 3, 4, 5].map(i => <Star key={i} size={18} fill="#f59e0b" color="#f59e0b" />)}
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <Star 
+                          key={i} 
+                          size={18} 
+                          fill={i <= vouch.rating ? "#f59e0b" : "transparent"} 
+                          color={i <= vouch.rating ? "#f59e0b" : "#374151"} 
+                        />
+                      ))}
                    </div>
-                   <span style={{ fontSize: '12px', fontWeight: '800', color: '#10b981', textTransform: 'uppercase' }}>Verified Purchase</span>
+                   <span className={vouch.verified ? 'tag-green' : 'tag-gray'}>
+                     {vouch.verified ? 'Verified Purchase' : 'Unverified'}
+                   </span>
                 </div>
              </div>
 
@@ -69,37 +136,74 @@ const VouchDetail: React.FC = () => {
                 </p>
              </div>
 
-             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-                {vouch.tags.map((tag, i) => (
-                   <span key={i} style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: '#fff', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '700' }}>
-                      {tag}
-                   </span>
-                ))}
+             {vouch.tags.length > 0 && (
+               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '32px' }}>
+                  {vouch.tags.map((tag, i) => (
+                     <span key={i} className="tag tag-cyan">
+                        #{tag}
+                     </span>
+                  ))}
+               </div>
+             )}
+
+             {/* Action Buttons */}
+             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+               <button
+                 onClick={() => handleMarkHelpful(true)}
+                 disabled={hasVotedHelpful}
+                 className={hasVotedHelpful ? 'btn-ghost' : 'btn-ghost'}
+                 style={{
+                   padding: '8px 16px',
+                   fontSize: '12px',
+                   display: 'flex',
+                   alignItems: 'center',
+                   gap: '6px',
+                   backgroundColor: hasVotedHelpful ? 'rgba(16,185,129,0.1)' : undefined,
+                   color: hasVotedHelpful ? '#10b981' : undefined
+                 }}
+               >
+                 <ThumbsUp size={14} />
+                 Helpful ({vouch.helpful_count})
+               </button>
+               <button className="btn-ghost" style={{ padding: '8px 12px', fontSize: '12px' }}>
+                 <Share2 size={14} />
+               </button>
+               <button className="btn-ghost" style={{ padding: '8px 12px', fontSize: '12px' }}>
+                 <Flag size={14} />
+               </button>
              </div>
           </div>
 
-          <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '32px', padding: '40px' }}>
-             <h4 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <ShieldCheck size={20} color="#00f2ff" />
-                Proof Snapshot
-             </h4>
-             <img 
-               src={vouch.proofImage} 
-               alt="Proof of purchase" 
-               style={{ width: '100%', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }} 
-             />
-             <p style={{ textAlign: 'center', color: '#6b6b7d', fontSize: '12px', marginTop: '16px' }}>Snapshot taken on {vouch.date} by user.</p>
-          </div>
+          {/* Proof Image */}
+          {vouch.proof_image_url && (
+            <div className="card">
+               <h4 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <ShieldCheck size={20} color="#00f2ff" />
+                  Proof Snapshot
+               </h4>
+               <img 
+                 src={vouch.proof_image_url} 
+                 alt="Proof of purchase" 
+                 style={{ width: '100%', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }} 
+               />
+               <p style={{ textAlign: 'center', color: '#6b6b7d', fontSize: '12px', marginTop: '16px' }}>
+                 Snapshot uploaded by {vouch.user.username} on {new Date(vouch.created_at).toLocaleDateString()}
+               </p>
+            </div>
+          )}
         </div>
 
         {/* Right - Product linked info */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-           <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '32px', padding: '32px' }}>
-              <h4 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '20px' }}>Item Mentioned</h4>
+           <div className="card">
+              <h4 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '20px' }}>Product Reviewed</h4>
               <div style={{ backgroundColor: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                 <p style={{ fontSize: '15px', fontWeight: '800', marginBottom: '8px' }}>{vouch.product}</p>
+                 <p style={{ fontSize: '15px', fontWeight: '800', marginBottom: '8px' }}>{vouch.product.name}</p>
+                 <p style={{ fontSize: '12px', color: '#6b6b7d', marginBottom: '12px', textTransform: 'uppercase' }}>
+                   {vouch.product.category}
+                 </p>
                  <button 
-                  onClick={() => navigate('/shop/bank-01')}
+                  onClick={() => navigate(`/shop/${vouch.product_id}`)}
                   style={{ color: '#00f2ff', fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px' }}
                  >
                     View in Marketplace
@@ -108,10 +212,30 @@ const VouchDetail: React.FC = () => {
               </div>
            </div>
 
-           <div style={{ backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.1)', borderRadius: '24px', padding: '24px', textAlign: 'center' }}>
-              <ThumbsUp size={32} color="#10b981" style={{ marginBottom: '16px' }} />
-              <p style={{ fontSize: '14px', fontWeight: '800', color: '#10b981', marginBottom: '4px' }}>Helpful Review</p>
-              <p style={{ fontSize: '12px', color: '#a0a0b8' }}>14 people found this review helpful.</p>
+           {vouch.helpful_count > 0 && (
+             <div className="card" style={{ backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.1)', textAlign: 'center' }}>
+                <ThumbsUp size={32} color="#10b981" style={{ marginBottom: '16px' }} />
+                <p style={{ fontSize: '14px', fontWeight: '800', color: '#10b981', marginBottom: '4px' }}>Helpful Review</p>
+                <p style={{ fontSize: '12px', color: '#a0a0b8' }}>
+                  {vouch.helpful_count} {vouch.helpful_count === 1 ? 'person' : 'people'} found this review helpful.
+                </p>
+             </div>
+           )}
+
+           {/* User Stats */}
+           <div className="card">
+              <h4 style={{ fontSize: '14px', fontWeight: '800', marginBottom: '16px' }}>Reviewer Info</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(0, 242, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <User size={16} color="#00f2ff" />
+                </div>
+                <div>
+                  <p style={{ fontSize: '13px', fontWeight: '800' }}>{vouch.user.username}</p>
+                  <p className={vouch.user.verified ? 'tag-green' : 'tag-gray'} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '8px' }}>
+                    {vouch.user.verified ? 'Verified User' : 'Unverified User'}
+                  </p>
+                </div>
+              </div>
            </div>
         </div>
       </div>

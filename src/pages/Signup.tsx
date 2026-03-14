@@ -15,7 +15,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -72,12 +72,13 @@ const Signup: React.FC = () => {
     setError('');
 
     try {
-      await apiClient.register({
+      await api.register({
         email: formData.email,
         password: formData.password,
         username: formData.username,
         first_name: formData.firstName,
-        last_name: formData.lastName
+        last_name: formData.lastName,
+        phone_number: formData.phone || ''
       });
       navigate('/dashboard');
     } catch (error) {

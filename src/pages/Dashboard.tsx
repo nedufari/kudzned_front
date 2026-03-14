@@ -12,7 +12,7 @@ import {
   Clock
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 import { toast } from '../utils/toast';
 
 interface Wallet {
@@ -105,13 +105,13 @@ const Dashboard: React.FC = () => {
         console.log('Loading dashboard data...');
         
         // Load wallet first
-        const walletData = await apiClient.getWallet();
+        const walletData = await api.getWallet();
         console.log('Wallet loaded:', walletData);
         setWallet(walletData);
         
         // Load transactions separately to avoid blocking wallet display
         try {
-          const transactionsData = await apiClient.getTransactions({ page: 1, limit: 5 });
+          const transactionsData = await api.getTransactions({ page: 1, limit: 5 });
           console.log('Transactions loaded:', transactionsData);
           setTransactions(transactionsData || []);
         } catch (transactionError) {
@@ -150,12 +150,12 @@ const Dashboard: React.FC = () => {
     setLoading(true);
     try {
       // Load wallet first
-      const walletData = await apiClient.getWallet();
+      const walletData = await api.getWallet();
       setWallet(walletData);
       
       // Load transactions separately
       try {
-        const transactionsData = await apiClient.getTransactions({ page: 1, limit: 5 });
+        const transactionsData = await api.getTransactions({ page: 1, limit: 5 });
         setTransactions(transactionsData || []);
       } catch (transactionError) {
         console.error('Failed to refresh transactions (non-blocking):', transactionError);
@@ -193,7 +193,7 @@ const Dashboard: React.FC = () => {
   // View transaction detail
   const viewTransaction = async (transactionId: string) => {
     try {
-      const transaction = await apiClient.getTransaction(transactionId);
+      const transaction = await api.getTransaction(transactionId);
       // For now, just show an alert with transaction details
       // In a real app, you'd navigate to a detail page or show a modal
       alert(`Transaction Details:

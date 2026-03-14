@@ -11,12 +11,12 @@ import {
   EyeOff
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('nedufranco@gmail.com');
-  const [password, setPassword] = useState('98654449');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -25,7 +25,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await apiClient.login(email, password);
+      await api.login(email, password);
       navigate('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);

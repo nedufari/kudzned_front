@@ -110,7 +110,6 @@ export interface Cart {
   created_at: string;
   updated_at: string;
 }
-
 // Raw API cart response interface
 interface ApiCartItem {
   id: string;
@@ -162,7 +161,6 @@ export interface CreateOrderRequest {
     quantity: number;
   }[];
 }
-
 export interface Wallet {
   id: string;
   user_id: string;
@@ -187,6 +185,89 @@ export interface Category {
   updated_at: string;
 }
 
+// Vouch interfaces
+export interface Vouch {
+  id: string;
+  user_id: string;
+  product_id: string;
+  rating: number; // 1-5
+  comment: string;
+  proof_image_url?: string;
+  verified: boolean;
+  helpful_count: number;
+  created_at: string;
+  updated_at: string;
+  tags: string[];
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    verified: boolean;
+  };
+  product: {
+    id: string;
+    name: string;
+    category: string;
+  };
+}
+export interface CreateVouchRequest {
+  product_id: string;
+  rating: number;
+  comment: string;
+  proof_image?: File;
+  tags?: string[];
+}
+
+export interface VouchFilters {
+  product_id?: string;
+  rating?: number;
+  verified_only?: boolean;
+  tags?: string[];
+  sort_by?: 'date' | 'rating' | 'helpful';
+  sort_order?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
+// Cashout Clip interfaces
+export interface CashoutClip {
+  id: string;
+  user_id: string;
+  title: string;
+  description?: string;
+  video_url: string;
+  thumbnail_url: string;
+  duration: number; // in seconds
+  profit_amount: number;
+  view_count: number;
+  created_at: string;
+  updated_at: string;
+  tags: string[];
+  user: {
+    id: string;
+    username: string;
+    verified: boolean;
+  };
+}
+
+export interface CreateClipRequest {
+  title: string;
+  description?: string;
+  video_file: File;
+  profit_amount: number;
+  tags?: string[];
+}
+export interface ClipFilters {
+  user_id?: string;
+  min_profit?: number;
+  max_profit?: number;
+  tags?: string[];
+  sort_by?: 'date' | 'views' | 'profit';
+  sort_order?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
 // Simple API client class
 class ApiClient {
   private baseURL: string;
@@ -198,524 +279,440 @@ class ApiClient {
     this.token = localStorage.getItem('auth_token');
   }
 
-  // Set authentication token
   setToken(token: string) {
     this.token = token;
     localStorage.setItem('auth_token', token);
   }
 
-  // Clear authentication token
   clearToken() {
     this.token = null;
     localStorage.removeItem('auth_token');
   }
 
-  // Basic request method
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'ngrok-skip-browser-warning': 'true', // Skip ngrok browser warning
-      ...(options.headers as Record<string, string>),
+      'ngrok-skip-browser-warning': 'true',
+      ...(options.headers as Record<string, string> || {}),
     };
 
-    // Add auth token if available
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
+    // Add auth header if token exists and not FormData
+    if (this.token && !(options.body instanceof FormData)) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    } else if (this.token && options.body instanceof FormData) {
+      headers['Authorization'] = `Bearer ${this.token}`;
     }
 
+    // Add Content-Type for JSON requests
+    if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    const config: RequestInit = {
+      ...options,
+      headers,
+    };
+
     try {
-      console.log('API Request:', { url, method: options.method || 'GET', headers });
+      const response = await fetch(url, config);
       
-      const response = await fetch(url, {
-        ...options,
-        headers,
-      });
-
-      console.log('API Response Status:', response.status);
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error:', errorText);
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // If we can't parse the error response, use the default message
+        }
         
-        // Only show toast errors for critical operations (not background data loading)
-        const isCriticalOperation = options.method === 'POST' || options.method === 'PUT' || options.method === 'DELETE';
-        
-        if (isCriticalOperation) {
-          let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-          try {
-            const errorData = JSON.parse(errorText);
-            if (errorData.message) {
-              errorMessage = errorData.message;
-            }
-          } catch (e) {
-            // Use default error message
-          }
-          
+        // Only show toast for critical operations (POST/PUT/DELETE)
+        const method = options.method || 'GET';
+        if (['POST', 'PUT', 'DELETE'].includes(method.toUpperCase())) {
           toast.error(errorMessage);
         }
         
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(errorMessage);
       }
 
-      const responseData = await response.json();
-      console.log('API Response Data:', responseData);
+      const data = await response.json();
       
-      // If the response has a 'data' property, return that, otherwise return the whole response
-      if (responseData && typeof responseData === 'object' && 'data' in responseData) {
-        return responseData.data as T;
+      // Show success toast for successful POST/PUT operations
+      const method = options.method || 'GET';
+      if (['POST', 'PUT'].includes(method.toUpperCase()) && data.success && data.message) {
+        toast.success(data.message);
       }
       
-      return responseData as T;
+      return data;
     } catch (error) {
-      console.error('API Request failed:', error);
+      console.error('API request failed:', error);
       
-      // Only show network error toasts for critical operations
-      const isCriticalOperation = options.method === 'POST' || options.method === 'PUT' || options.method === 'DELETE';
-      
-      if (isCriticalOperation && error instanceof Error && !error.message.startsWith('HTTP')) {
-        toast.error('Network error. Please check your connection.');
+      // Only show toast for critical operations
+      const method = options.method || 'GET';
+      if (['POST', 'PUT', 'DELETE'].includes(method.toUpperCase())) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error('Network error occurred');
+        }
       }
       
       throw error;
     }
   }
-
-  // Simple register method
+  // Authentication methods
   async register(userData: {
     email: string;
-    password: string;
     username: string;
+    password: string;
     first_name: string;
     last_name: string;
+    phone_number: string;
   }): Promise<AuthResponse> {
-    const response = await this.request<AuthResponse>('/auth/register', {
+    const response = await this.request<ApiResponse<AuthResponse>>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
     
-    // Store the token immediately after successful registration
-    if (response.access_token) {
-      console.log('Storing token from registration:', response.access_token.substring(0, 20) + '...');
-      this.setToken(response.access_token);
-      toast.success('Account created successfully! Welcome to KUDZNED.');
-    }
+    // Store token and user data
+    this.setToken(response.data.access_token);
     
-    return response;
+    return response.data;
   }
 
-  // Simple login method
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await this.request<AuthResponse>('/auth/login', {
+    const response = await this.request<ApiResponse<AuthResponse>>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
     
-    // Store the token immediately after successful login
-    if (response.access_token) {
-      console.log('Storing token from login:', response.access_token.substring(0, 20) + '...');
-      this.setToken(response.access_token);
-      toast.success('Login successful! Welcome back.');
-    }
+    // Store token and user data
+    this.setToken(response.data.access_token);
     
-    return response;
+    return response.data;
   }
 
-  // Get current user method
   async getCurrentUser(): Promise<User> {
-    return this.request<User>('/auth/me', {
-      method: 'GET',
-    });
+    const response = await this.request<ApiResponse<User>>('/auth/me');
+    return response.data;
   }
 
-  // Logout method - frontend only
   logout(): void {
-    console.log('Logging out user (frontend only)');
-    // Clear the token from memory and localStorage
     this.clearToken();
-    toast.success('Logged out successfully.');
+    // Dispatch logout event for components to react
+    window.dispatchEvent(new CustomEvent('userLoggedOut'));
   }
-
   // Product methods
   async getProducts(filters?: ProductFilters): Promise<Product[]> {
-    const params = new URLSearchParams();
-    
-    if (filters) {
-      if (filters.page !== undefined) params.append('page', filters.page.toString());
-      if (filters.limit !== undefined) params.append('limit', filters.limit.toString());
-      if (filters.search) params.append('search', filters.search);
-      if (filters.category_id) params.append('category_id', filters.category_id);
-      if (filters.min_price !== undefined) params.append('min_price', filters.min_price.toString());
-      if (filters.max_price !== undefined) params.append('max_price', filters.max_price.toString());
-      if (filters.tags && filters.tags.length > 0) {
-        filters.tags.forEach(tag => params.append('tags', tag));
-      }
-      if (filters.status) params.append('status', filters.status);
-      if (filters.sort_by) params.append('sort_by', filters.sort_by);
-      if (filters.sort_order) params.append('sort_order', filters.sort_order);
-    }
-    
-    const queryString = params.toString();
-    const endpoint = queryString ? `/products?${queryString}` : '/products';
-    
-    // Get raw API response
-    const apiProducts = await this.request<ApiProduct[]>(endpoint, {
-      method: 'GET',
-    });
-    
-    // Transform API response to match our Product interface
-    return apiProducts.map((apiProduct): Product => ({
-      id: apiProduct.id,
-      name: apiProduct.title, // Map title to name
-      description: apiProduct.description,
-      price: parseFloat(apiProduct.price) / 100, // Convert from satoshis to dollars (assuming price is in satoshis)
-      category: apiProduct.category.name, // Map category.name to category
-      category_id: apiProduct.category_id,
-      stock: apiProduct.availability === 'in_stock' ? 10 : 0, // Map availability to stock count
-      image_url: apiProduct.images.length > 0 ? apiProduct.images[0] : undefined,
-      is_active: apiProduct.status === 'active',
-      created_at: apiProduct.created_at,
-      updated_at: apiProduct.updated_at,
-    }));
-  }
+    try {
+      const params = new URLSearchParams();
+      if (filters?.page) params.append('page', filters.page.toString());
+      if (filters?.limit) params.append('limit', filters.limit.toString());
+      if (filters?.search) params.append('search', filters.search);
+      if (filters?.category_id) params.append('category_id', filters.category_id);
+      if (filters?.min_price) params.append('min_price', filters.min_price.toString());
+      if (filters?.max_price) params.append('max_price', filters.max_price.toString());
+      if (filters?.tags?.length) params.append('tags', filters.tags.join(','));
+      if (filters?.status) params.append('status', filters.status);
+      if (filters?.sort_by) params.append('sort_by', filters.sort_by);
+      if (filters?.sort_order) params.append('sort_order', filters.sort_order);
 
+      const queryString = params.toString();
+      const endpoint = queryString ? `/products?${queryString}` : '/products';
+      
+      const response = await this.request<ApiResponse<ApiProduct[]>>(endpoint);
+      
+      // Transform API response to our Product interface
+      return (response.data || []).map(apiProduct => ({
+        id: apiProduct.id,
+        name: apiProduct.title,
+        description: apiProduct.description,
+        price: parseFloat(apiProduct.price) / 100, // Convert from satoshis to dollars
+        category: apiProduct.category?.name || 'Unknown',
+        category_id: apiProduct.category_id,
+        stock: 100, // Default stock since API doesn't provide this
+        image_url: apiProduct.images?.[0] || undefined,
+        is_active: apiProduct.status === 'active',
+        created_at: apiProduct.created_at,
+        updated_at: apiProduct.updated_at,
+      }));
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      return [];
+    }
+  }
   async getProduct(id: string): Promise<Product> {
-    // Get raw API response
-    const apiProduct = await this.request<ApiProduct>(`/products/${encodeURIComponent(id)}`, {
-      method: 'GET',
-    });
+    const response = await this.request<ApiResponse<ApiProduct>>(`/products/${id}`);
+    const apiProduct = response.data;
     
-    // Transform API response to match our Product interface
     return {
       id: apiProduct.id,
-      name: apiProduct.title, // Map title to name
+      name: apiProduct.title,
       description: apiProduct.description,
-      price: parseFloat(apiProduct.price) / 100, // Convert from satoshis to dollars
-      category: apiProduct.category.name, // Map category.name to category
+      price: parseFloat(apiProduct.price) / 100,
+      category: apiProduct.category?.name || 'Unknown',
       category_id: apiProduct.category_id,
-      stock: apiProduct.availability === 'in_stock' ? 10 : 0, // Map availability to stock count
-      image_url: apiProduct.images.length > 0 ? apiProduct.images[0] : undefined,
+      stock: 100,
+      image_url: apiProduct.images?.[0] || undefined,
       is_active: apiProduct.status === 'active',
       created_at: apiProduct.created_at,
       updated_at: apiProduct.updated_at,
     };
   }
 
-  // Category methods
   async getCategories(): Promise<Category[]> {
-    return this.request<Category[]>('/products/categories', {
-      method: 'GET',
-    });
+    const response = await this.request<ApiResponse<Category[]>>('/products/categories');
+    return response.data || [];
   }
 
   // Cart methods
   async getCart(): Promise<Cart> {
-    const apiCart = await this.request<ApiCart>('/cart', {
-      method: 'GET',
-    });
-    
-    // Get categories to map category names
-    let categories: Category[] = [];
     try {
-      categories = await this.getCategories();
-    } catch (error) {
-      console.error('Failed to load categories for cart:', error);
-    }
-    
-    // Transform API response to match our Cart interface
-    return {
-      id: apiCart.id,
-      user_id: apiCart.user_id,
-      items: apiCart.items.map((apiItem): CartItem => {
-        // Find category name
-        const category = categories.find(cat => cat.id === apiItem.product.category_id);
-        const categoryName = category ? category.name : 'Transfer';
-        
+      const response = await this.request<ApiResponse<ApiCart>>('/cart');
+      const apiCart = response.data;
+      
+      if (!apiCart || !apiCart.items) {
         return {
-          id: apiItem.id,
-          product_id: apiItem.product_id,
-          quantity: apiItem.quantity,
-          price: parseFloat(apiItem.unit_price) / 100, // Convert from satoshis to dollars using unit_price
-          product: {
-            id: apiItem.product.id,
-            name: apiItem.product.title,
-            description: apiItem.product.description,
-            price: parseFloat(apiItem.product.price) / 100,
-            category: categoryName, // Use actual category name
-            category_id: apiItem.product.category_id,
-            stock: apiItem.product.availability === 'in_stock' ? 10 : 0,
-            image_url: apiItem.product.images.length > 0 ? apiItem.product.images[0] : undefined,
-            is_active: apiItem.product.status === 'active',
-            created_at: apiItem.product.created_at,
-            updated_at: apiItem.product.updated_at,
-          }
+          id: '',
+          user_id: '',
+          items: [],
+          total: 0,
+          created_at: '',
+          updated_at: ''
         };
-      }),
-      total: parseFloat(apiCart.total_amount) / 100, // Convert from satoshis to dollars using total_amount
-      created_at: apiCart.created_at,
-      updated_at: apiCart.updated_at,
-    };
-  }
+      }
 
+      return {
+        id: apiCart.id,
+        user_id: apiCart.user_id,
+        items: apiCart.items.map(item => ({
+          id: item.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: parseFloat(item.unit_price) / 100,
+          product: {
+            id: item.product.id,
+            name: item.product.title,
+            description: item.product.description,
+            price: parseFloat(item.product.price) / 100,
+            category: item.product.category?.name || 'Unknown',
+            category_id: item.product.category_id,
+            stock: 100,
+            image_url: item.product.images?.[0] || undefined,
+            is_active: item.product.status === 'active',
+            created_at: item.product.created_at,
+            updated_at: item.product.updated_at,
+          }
+        })),
+        total: parseFloat(apiCart.total_amount) / 100,
+        created_at: apiCart.created_at,
+        updated_at: apiCart.updated_at,
+      };
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      return {
+        id: '',
+        user_id: '',
+        items: [],
+        total: 0,
+        created_at: '',
+        updated_at: ''
+      };
+    }
+  }
   async addToCart(productId: string, quantity: number = 1): Promise<Cart> {
-    const apiCart = await this.request<ApiCart>('/cart/items', {
+    const response = await this.request<ApiResponse<ApiCart>>('/cart/items', {
       method: 'POST',
-      body: JSON.stringify({ productId, quantity }), // Use productId instead of product_id
+      body: JSON.stringify({
+        product_id: productId,
+        quantity: quantity,
+      }),
     });
-    
-    toast.success('Product added to cart!');
-    
-    // Dispatch cart update event
-    window.dispatchEvent(new CustomEvent('cartUpdated'));
-    
-    // Transform API response to match our Cart interface
-    return {
+
+    const apiCart = response.data;
+    const cart = {
       id: apiCart.id,
       user_id: apiCart.user_id,
-      items: apiCart.items.map((apiItem): CartItem => ({
-        id: apiItem.id,
-        product_id: apiItem.product_id,
-        quantity: apiItem.quantity,
-        price: parseFloat(apiItem.unit_price) / 100, // Use unit_price
+      items: apiCart.items.map(item => ({
+        id: item.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: parseFloat(item.unit_price) / 100,
         product: {
-          id: apiItem.product.id,
-          name: apiItem.product.title,
-          description: apiItem.product.description,
-          price: parseFloat(apiItem.product.price) / 100,
-          category: 'Transfer', // Default category
-          category_id: apiItem.product.category_id,
-          stock: apiItem.product.availability === 'in_stock' ? 10 : 0,
-          image_url: apiItem.product.images.length > 0 ? apiItem.product.images[0] : undefined,
-          is_active: apiItem.product.status === 'active',
-          created_at: apiItem.product.created_at,
-          updated_at: apiItem.product.updated_at,
+          id: item.product.id,
+          name: item.product.title,
+          description: item.product.description,
+          price: parseFloat(item.product.price) / 100,
+          category: item.product.category?.name || 'Unknown',
+          category_id: item.product.category_id,
+          stock: 100,
+          image_url: item.product.images?.[0] || undefined,
+          is_active: item.product.status === 'active',
+          created_at: item.product.created_at,
+          updated_at: item.product.updated_at,
         }
       })),
-      total: parseFloat(apiCart.total_amount) / 100, // Use total_amount
+      total: parseFloat(apiCart.total_amount) / 100,
       created_at: apiCart.created_at,
       updated_at: apiCart.updated_at,
     };
-  }
 
+    // Dispatch event for real-time updates
+    window.dispatchEvent(new CustomEvent('cartUpdated', { detail: cart }));
+    
+    return cart;
+  }
   async updateCartItem(itemId: string, quantity: number): Promise<Cart> {
-    const apiCart = await this.request<ApiCart>(`/cart/items/${itemId}`, {
+    const response = await this.request<ApiResponse<ApiCart>>(`/cart/items/${itemId}`, {
       method: 'PUT',
       body: JSON.stringify({ quantity }),
     });
-    
-    toast.success('Cart updated!');
-    
-    // Dispatch cart update event
-    window.dispatchEvent(new CustomEvent('cartUpdated'));
-    
-    // Transform API response
-    return {
+
+    const apiCart = response.data;
+    const cart = {
       id: apiCart.id,
       user_id: apiCart.user_id,
-      items: apiCart.items.map((apiItem): CartItem => ({
-        id: apiItem.id,
-        product_id: apiItem.product_id,
-        quantity: apiItem.quantity,
-        price: parseFloat(apiItem.unit_price) / 100, // Use unit_price
+      items: apiCart.items.map(item => ({
+        id: item.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: parseFloat(item.unit_price) / 100,
         product: {
-          id: apiItem.product.id,
-          name: apiItem.product.title,
-          description: apiItem.product.description,
-          price: parseFloat(apiItem.product.price) / 100,
-          category: 'Transfer', // Default category
-          category_id: apiItem.product.category_id,
-          stock: apiItem.product.availability === 'in_stock' ? 10 : 0,
-          image_url: apiItem.product.images.length > 0 ? apiItem.product.images[0] : undefined,
-          is_active: apiItem.product.status === 'active',
-          created_at: apiItem.product.created_at,
-          updated_at: apiItem.product.updated_at,
+          id: item.product.id,
+          name: item.product.title,
+          description: item.product.description,
+          price: parseFloat(item.product.price) / 100,
+          category: item.product.category?.name || 'Unknown',
+          category_id: item.product.category_id,
+          stock: 100,
+          image_url: item.product.images?.[0] || undefined,
+          is_active: item.product.status === 'active',
+          created_at: item.product.created_at,
+          updated_at: item.product.updated_at,
         }
       })),
-      total: parseFloat(apiCart.total_amount) / 100, // Use total_amount
+      total: parseFloat(apiCart.total_amount) / 100,
       created_at: apiCart.created_at,
       updated_at: apiCart.updated_at,
     };
-  }
 
+    // Dispatch event for real-time updates
+    window.dispatchEvent(new CustomEvent('cartUpdated', { detail: cart }));
+    
+    return cart;
+  }
   async removeFromCart(itemId: string): Promise<Cart> {
-    const apiCart = await this.request<ApiCart>(`/cart/items/${itemId}`, {
+    const response = await this.request<ApiResponse<ApiCart>>(`/cart/items/${itemId}`, {
       method: 'DELETE',
     });
-    
-    toast.success('Item removed from cart!');
-    
-    // Dispatch cart update event
-    window.dispatchEvent(new CustomEvent('cartUpdated'));
-    
-    // Transform API response
-    return {
+
+    const apiCart = response.data;
+    const cart = {
       id: apiCart.id,
       user_id: apiCart.user_id,
-      items: apiCart.items.map((apiItem): CartItem => ({
-        id: apiItem.id,
-        product_id: apiItem.product_id,
-        quantity: apiItem.quantity,
-        price: parseFloat(apiItem.unit_price) / 100, // Use unit_price
+      items: apiCart.items.map(item => ({
+        id: item.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: parseFloat(item.unit_price) / 100,
         product: {
-          id: apiItem.product.id,
-          name: apiItem.product.title,
-          description: apiItem.product.description,
-          price: parseFloat(apiItem.product.price) / 100,
-          category: 'Transfer', // Default category
-          category_id: apiItem.product.category_id,
-          stock: apiItem.product.availability === 'in_stock' ? 10 : 0,
-          image_url: apiItem.product.images.length > 0 ? apiItem.product.images[0] : undefined,
-          is_active: apiItem.product.status === 'active',
-          created_at: apiItem.product.created_at,
-          updated_at: apiItem.product.updated_at,
+          id: item.product.id,
+          name: item.product.title,
+          description: item.product.description,
+          price: parseFloat(item.product.price) / 100,
+          category: item.product.category?.name || 'Unknown',
+          category_id: item.product.category_id,
+          stock: 100,
+          image_url: item.product.images?.[0] || undefined,
+          is_active: item.product.status === 'active',
+          created_at: item.product.created_at,
+          updated_at: item.product.updated_at,
         }
       })),
-      total: parseFloat(apiCart.total_amount) / 100, // Use total_amount
+      total: parseFloat(apiCart.total_amount) / 100,
       created_at: apiCart.created_at,
       updated_at: apiCart.updated_at,
     };
+
+    // Dispatch event for real-time updates
+    window.dispatchEvent(new CustomEvent('cartUpdated', { detail: cart }));
+    
+    return cart;
   }
 
   async clearCart(): Promise<void> {
-    await this.request<void>('/cart/clear', {
+    await this.request<ApiResponse<void>>('/cart', {
       method: 'DELETE',
     });
-    
-    toast.success('Cart cleared!');
-    
-    // Dispatch cart update event
-    window.dispatchEvent(new CustomEvent('cartUpdated'));
-  }
 
-  // Order methods
+    // Dispatch event for real-time updates
+    window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { items: [], total: 0 } }));
+  }
   // Order methods
   async createOrder(orderData: CreateOrderRequest): Promise<Order> {
-    const response = await this.request<Order>('/orders', {
+    const response = await this.request<ApiResponse<Order>>('/orders', {
       method: 'POST',
       body: JSON.stringify(orderData),
     });
+
+    // Dispatch event for real-time updates
+    window.dispatchEvent(new CustomEvent('orderCreated', { detail: response.data }));
     
-    toast.success('Order created successfully!');
-    
-    // Dispatch wallet and cart update events since order affects both
-    window.dispatchEvent(new CustomEvent('walletUpdated'));
-    window.dispatchEvent(new CustomEvent('cartUpdated'));
-    
-    return response;
+    return response.data;
   }
 
   async getOrders(page: number = 1, limit: number = 20): Promise<Order[]> {
-    const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('limit', limit.toString());
-    
     try {
-      const response = await this.request<any>(`/orders?${params.toString()}`, {
-        method: 'GET',
-      });
-      
-      // Handle both direct response and wrapped response
-      const ordersData = response.data || response;
-      
-      // If it's an array, return it directly, otherwise return empty array
-      if (Array.isArray(ordersData)) {
-        return ordersData;
-      } else if (ordersData && Array.isArray(ordersData.orders)) {
-        // Handle paginated response with orders array
-        return ordersData.orders;
-      } else {
-        // Return empty array if no orders found
-        return [];
-      }
+      const response = await this.request<ApiResponse<Order[]>>(`/orders?page=${page}&limit=${limit}`);
+      return response.data || [];
     } catch (error) {
-      console.error('Failed to fetch orders:', error);
-      // Return empty array on error instead of throwing
+      console.error('Error fetching orders:', error);
       return [];
     }
   }
 
   async getOrder(id: string): Promise<Order> {
-    const response = await this.request<any>(`/orders/${id}`, {
-      method: 'GET',
-    });
-    
-    // Handle both direct response and wrapped response
-    const orderData = response.data || response;
-    
-    return orderData as Order;
+    const response = await this.request<ApiResponse<Order>>(`/orders/${id}`);
+    return response.data;
   }
 
   // Wallet methods
   async getWallet(): Promise<Wallet> {
-    try {
-      return await this.request<Wallet>('/wallets', {
-        method: 'GET',
-      });
-    } catch (error) {
-      console.error('Failed to fetch wallet:', error);
-      throw error; // Re-throw wallet errors since wallet is critical
-    }
+    const response = await this.request<ApiResponse<Wallet>>('/wallets');
+    return response.data;
   }
-
-  // Transaction methods
   async getTransactions(params?: { page?: number; limit?: number }): Promise<any[]> {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.limit) queryParams.append('limit', params.limit.toString());
-    
-    const queryString = queryParams.toString();
-    const endpoint = queryString ? `/wallets/transactions?${queryString}` : '/wallets/transactions';
-    
     try {
-      const response = await this.request<any>(endpoint, {
-        method: 'GET',
-      });
+      const queryParams = new URLSearchParams();
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
       
-      // Handle both direct response and wrapped response
-      const transactionsData = response.data || response;
+      const queryString = queryParams.toString();
+      const endpoint = queryString ? `/wallets/transactions?${queryString}` : '/wallets/transactions';
       
-      // If it's an array, return it directly, otherwise return empty array
-      if (Array.isArray(transactionsData)) {
-        return transactionsData;
-      } else if (transactionsData && Array.isArray(transactionsData.transactions)) {
-        // Handle paginated response with transactions array
-        return transactionsData.transactions;
-      } else {
-        // Return empty array if no transactions found
-        return [];
-      }
+      const response = await this.request<ApiResponse<any[]>>(endpoint);
+      return response.data || [];
     } catch (error) {
-      console.error('Failed to fetch transactions:', error);
-      // Return empty array on error instead of throwing
+      console.error('Error fetching transactions:', error);
       return [];
     }
   }
 
   async getTransaction(id: string): Promise<any> {
-    try {
-      return await this.request<any>(`/wallets/transactions/${id}`, {
-        method: 'GET',
-      });
-    } catch (error) {
-      console.error('Failed to fetch transaction:', error);
-      throw error; // Re-throw for individual transaction errors
-    }
+    const response = await this.request<ApiResponse<any>>(`/wallets/transactions/${id}`);
+    return response.data;
   }
 
-  // Helper method to check if user has sufficient balance for checkout
   async checkSufficientBalance(totalAmount: number): Promise<boolean> {
     try {
       const wallet = await this.getWallet();
-      const availableBalance = parseFloat(wallet.available_balance) / 100; // Convert from satoshis to dollars
+      const availableBalance = parseFloat(wallet.available_balance) / 100; // Convert from satoshis
       return availableBalance >= totalAmount;
     } catch (error) {
-      console.error('Failed to check wallet balance:', error);
+      console.error('Error checking balance:', error);
       return false;
     }
   }
-
-  // Checkout method with balance validation
   async checkout(cart: Cart): Promise<Order> {
     // Check if user has sufficient balance
     const hasSufficientBalance = await this.checkSufficientBalance(cart.total);
@@ -737,10 +734,150 @@ class ApiClient {
 
     return this.createOrder(orderData);
   }
+
+  // Vouch methods
+  async getVouches(filters?: VouchFilters): Promise<Vouch[]> {
+    try {
+      const params = new URLSearchParams();
+      if (filters?.product_id) params.append('product_id', filters.product_id);
+      if (filters?.rating) params.append('rating', filters.rating.toString());
+      if (filters?.verified_only) params.append('verified_only', 'true');
+      if (filters?.tags?.length) params.append('tags', filters.tags.join(','));
+      if (filters?.sort_by) params.append('sort_by', filters.sort_by);
+      if (filters?.sort_order) params.append('sort_order', filters.sort_order);
+      if (filters?.page) params.append('page', filters.page.toString());
+      if (filters?.limit) params.append('limit', filters.limit.toString());
+
+      const queryString = params.toString();
+      const endpoint = queryString ? `/vouches?${queryString}` : '/vouches';
+      
+      const response = await this.request<ApiResponse<Vouch[]>>(endpoint);
+      return response.data || [];
+    } catch (error) {
+      console.error('Error fetching vouches:', error);
+      return [];
+    }
+  }
+  async getVouch(id: string): Promise<Vouch> {
+    const response = await this.request<ApiResponse<Vouch>>(`/vouches/${id}`);
+    return response.data;
+  }
+
+  async createVouch(vouchData: CreateVouchRequest): Promise<Vouch> {
+    const formData = new FormData();
+    formData.append('product_id', vouchData.product_id);
+    formData.append('rating', vouchData.rating.toString());
+    formData.append('comment', vouchData.comment);
+    if (vouchData.proof_image) {
+      formData.append('proof_image', vouchData.proof_image);
+    }
+    if (vouchData.tags?.length) {
+      formData.append('tags', JSON.stringify(vouchData.tags));
+    }
+
+    const response = await this.request<ApiResponse<Vouch>>('/vouches', {
+      method: 'POST',
+      body: formData,
+    });
+
+    // Dispatch event for real-time updates
+    window.dispatchEvent(new CustomEvent('vouchCreated', { detail: response.data }));
+    
+    return response.data;
+  }
+
+  async markVouchHelpful(vouchId: string, helpful: boolean): Promise<void> {
+    await this.request<ApiResponse<void>>(`/vouches/${vouchId}/helpful`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ helpful }),
+    });
+
+    // Dispatch event for real-time updates
+    window.dispatchEvent(new CustomEvent('vouchUpdated', { detail: { vouchId, helpful } }));
+  }
+  // Cashout Clip methods
+  async getClips(filters?: ClipFilters): Promise<CashoutClip[]> {
+    try {
+      const params = new URLSearchParams();
+      if (filters?.user_id) params.append('user_id', filters.user_id);
+      if (filters?.min_profit) params.append('min_profit', filters.min_profit.toString());
+      if (filters?.max_profit) params.append('max_profit', filters.max_profit.toString());
+      if (filters?.tags?.length) params.append('tags', filters.tags.join(','));
+      if (filters?.sort_by) params.append('sort_by', filters.sort_by);
+      if (filters?.sort_order) params.append('sort_order', filters.sort_order);
+      if (filters?.page) params.append('page', filters.page.toString());
+      if (filters?.limit) params.append('limit', filters.limit.toString());
+
+      const queryString = params.toString();
+      const endpoint = queryString ? `/clips?${queryString}` : '/clips';
+      
+      const response = await this.request<ApiResponse<CashoutClip[]>>(endpoint);
+      return response.data || [];
+    } catch (error) {
+      console.error('Error fetching clips:', error);
+      return [];
+    }
+  }
+
+  async getClip(id: string): Promise<CashoutClip> {
+    const response = await this.request<ApiResponse<CashoutClip>>(`/clips/${id}`);
+    
+    // Increment view count
+    this.incrementClipView(id).catch(console.error);
+    
+    return response.data;
+  }
+  async createClip(clipData: CreateClipRequest): Promise<CashoutClip> {
+    const formData = new FormData();
+    formData.append('title', clipData.title);
+    if (clipData.description) formData.append('description', clipData.description);
+    formData.append('video_file', clipData.video_file);
+    formData.append('profit_amount', clipData.profit_amount.toString());
+    if (clipData.tags?.length) {
+      formData.append('tags', JSON.stringify(clipData.tags));
+    }
+
+    const response = await this.request<ApiResponse<CashoutClip>>('/clips', {
+      method: 'POST',
+      body: formData,
+    });
+
+    // Dispatch event for real-time updates
+    window.dispatchEvent(new CustomEvent('clipCreated', { detail: response.data }));
+    
+    return response.data;
+  }
+
+  async incrementClipView(clipId: string): Promise<void> {
+    try {
+      await this.request<ApiResponse<void>>(`/clips/${clipId}/view`, {
+        method: 'POST',
+      });
+    } catch (error) {
+      // Silent fail for view tracking
+      console.error('Error tracking clip view:', error);
+    }
+  }
+
+  async deleteVouch(vouchId: string): Promise<void> {
+    await this.request<ApiResponse<void>>(`/vouches/${vouchId}`, {
+      method: 'DELETE',
+    });
+
+    // Dispatch event for real-time updates
+    window.dispatchEvent(new CustomEvent('vouchDeleted', { detail: { vouchId } }));
+  }
+
+  async deleteClip(clipId: string): Promise<void> {
+    await this.request<ApiResponse<void>>(`/clips/${clipId}`, {
+      method: 'DELETE',
+    });
+
+    // Dispatch event for real-time updates
+    window.dispatchEvent(new CustomEvent('clipDeleted', { detail: { clipId } }));
+  }
 }
 
-// Create and export the API client instance
-export const apiClient = new ApiClient(API_BASE_URL);
-
-// Export the class for testing
-export { ApiClient };
+// Create and export API instance
+export const api = new ApiClient(API_BASE_URL);

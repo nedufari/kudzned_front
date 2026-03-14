@@ -12,7 +12,7 @@ import {
   Loader2,
   X
 } from 'lucide-react';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 import { toast } from '../utils/toast';
 
 // Define types locally to avoid import issues
@@ -65,7 +65,7 @@ const Shop: React.FC = () => {
     try {
       // Test categories endpoint
       console.log('Testing categories: /products/categories');
-      const categories = await apiClient.getCategories();
+      const categories = await api.getCategories();
       console.log('Categories response:', categories);
       
       // Test products endpoint with filters
@@ -77,7 +77,7 @@ const Shop: React.FC = () => {
         sort_by: 'created_at',
         sort_order: 'DESC' as const
       };
-      const products = await apiClient.getProducts(filters);
+      const products = await api.getProducts(filters);
       console.log('Products response:', products);
       
       toast.success('API endpoints tested successfully!');
@@ -96,8 +96,8 @@ const Shop: React.FC = () => {
       console.log('Products endpoint: /products');
       
       const [productsData, categoriesData] = await Promise.all([
-        apiClient.getProducts(),
-        apiClient.getCategories()
+        api.getProducts(),
+        api.getCategories()
       ]);
       
       console.log('Products loaded:', productsData.length);
@@ -176,7 +176,7 @@ const Shop: React.FC = () => {
       }
       
       console.log('Searching with filters:', filters);
-      const productsData = await apiClient.getProducts(filters);
+      const productsData = await api.getProducts(filters);
       console.log('Search results:', productsData);
       
       setProducts(productsData);
@@ -191,7 +191,7 @@ const Shop: React.FC = () => {
 
   const handleAddToCart = async (productId: string) => {
     try {
-      await apiClient.addToCart(productId, 1);
+      await api.addToCart(productId, 1);
     } catch (error) {
       console.error('Failed to add to cart:', error);
       toast.error('Failed to add to cart');

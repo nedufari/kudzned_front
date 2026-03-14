@@ -14,7 +14,9 @@ import Profile from './pages/Profile';
 import ProductDetail from './pages/ProductDetail';
 import OrderDetail from './pages/OrderDetail';
 import VouchDetail from './pages/VouchDetail';
+import VouchCreate from './pages/VouchCreate';
 import ClipDetail from './pages/ClipDetail';
+import ClipUpload from './pages/ClipUpload';
 import CartPage from './pages/CartPage-working';
 import CheckoutPage from './pages/CheckoutPage-working';
 import SuccessPage from './pages/SuccessPage';
@@ -53,10 +55,12 @@ function App() {
           
           {/* Cashout Clips & Details */}
           <Route path="/cashout-clips" element={<CashoutClips />} />
+          <Route path="/cashout-clips/upload" element={<ClipUpload />} />
           <Route path="/cashout-clips/:id" element={<ClipDetail />} />
           
           {/* Vouches & Vouch Details */}
           <Route path="/vouches" element={<Vouches />} />
+          <Route path="/vouches/create" element={<VouchCreate />} />
           <Route path="/vouches/:id" element={<VouchDetail />} />
           
           {/* Orders & Order Details */}

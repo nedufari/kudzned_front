@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { apiClient, User, AuthResponse } from '../services/api';
+import React, { createContext, useContext, useState, type ReactNode } from 'react';
+import { api, type User, type AuthResponse } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -16,6 +16,7 @@ interface RegisterData {
   username: string;
   first_name: string;
   last_name: string;
+  phone_number: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,11 +42,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       console.log('Attempting login with:', { email });
-      const authResponse: AuthResponse = await apiClient.login(email, password);
+      const authResponse: AuthResponse = await api.login(email, password);
       console.log('Login successful:', authResponse);
       
       // Set token and user
-      apiClient.setToken(authResponse.access_token);
+      api.setToken(authResponse.access_token);
       setUser(authResponse.user);
     } catch (error) {
       console.error('Login failed:', error);
@@ -56,11 +57,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (data: RegisterData) => {
     try {
       console.log('Attempting registration with:', { ...data, password: '[HIDDEN]' });
-      const authResponse: AuthResponse = await apiClient.register(data);
+      const authResponse: AuthResponse = await api.register(data);
       console.log('Registration successful:', authResponse);
       
       // Set token and user
-      apiClient.setToken(authResponse.access_token);
+      api.setToken(authResponse.access_token);
       setUser(authResponse.user);
     } catch (error) {
       console.error('Registration failed:', error);
@@ -70,7 +71,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     console.log('Logging out user');
-    apiClient.clearToken();
+    api.clearToken();
     setUser(null);
   };
 

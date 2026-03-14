@@ -11,7 +11,7 @@ import {
   Save,
   Trash2
 } from 'lucide-react';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 
 const Profile: React.FC = () => {
   const [name, setName] = useState('Loading...');
@@ -23,7 +23,7 @@ const Profile: React.FC = () => {
     const loadProfileData = async () => {
       try {
         console.log('Loading profile data...');
-        const userData = await apiClient.getCurrentUser();
+        const userData = await api.getCurrentUser();
         console.log('Profile data loaded:', userData);
         
         // Update with real data

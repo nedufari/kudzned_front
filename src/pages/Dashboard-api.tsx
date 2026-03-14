@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 import { User } from '../services/api';
 import { Loader2, LogOut, User as UserIcon, Shield, Mail, Calendar } from 'lucide-react';
 
@@ -48,7 +48,7 @@ const Dashboard: React.FC = () => {
 
   const handleLogout = () => {
     console.log('Logging out...');
-    apiClient.clearToken();
+    api.clearToken();
     navigate('/login');
   };
 
@@ -217,7 +217,7 @@ const Dashboard: React.FC = () => {
               <span>Connected to KUDZNED Backend</span>
             </div>
             <p style={{ color: '#a0a0b8', fontSize: '14px', marginTop: '12px' }}>
-              Backend URL: {apiClient['baseURL']}
+              Backend URL: {api['baseURL']}
             </p>
           </div>
 

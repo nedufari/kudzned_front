@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from '../utils/toast';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 
 // Define Product type locally to avoid API import issues
 interface Product {
@@ -247,8 +247,8 @@ const Shop: React.FC = () => {
         console.log('Products endpoint: /products');
         
         const [productsData, categoriesData] = await Promise.all([
-          apiClient.getProducts(),
-          apiClient.getCategories()
+          api.getProducts(),
+          api.getCategories()
         ]);
         
         console.log('Products loaded:', productsData.length);
@@ -280,8 +280,8 @@ const Shop: React.FC = () => {
     setLoading(true);
     try {
       const [productsData, categoriesData] = await Promise.all([
-        apiClient.getProducts(),
-        apiClient.getCategories()
+        api.getProducts(),
+        api.getCategories()
       ]);
       
       setProducts(productsData);
@@ -320,7 +320,7 @@ const Shop: React.FC = () => {
       }
       
       console.log('Searching with filters:', filters);
-      const productsData = await apiClient.getProducts(filters);
+      const productsData = await api.getProducts(filters);
       console.log('Search results:', productsData);
       
       setProducts(productsData);
@@ -335,7 +335,7 @@ const Shop: React.FC = () => {
 
   const handleAddToCart = async (productId: string) => {
     try {
-      await apiClient.addToCart(productId, 1);
+      await api.addToCart(productId, 1);
     } catch (error) {
       console.error('Failed to add to cart:', error);
       toast.error('Failed to add to cart');

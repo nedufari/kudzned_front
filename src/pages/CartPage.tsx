@@ -11,7 +11,7 @@ import {
   Plus,
   Minus
 } from 'lucide-react';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 import { toast } from '../utils/toast';
 
 interface CartItem {
@@ -55,7 +55,7 @@ const CartPage: React.FC = () => {
     const loadCart = async () => {
       try {
         console.log('Loading cart from API...');
-        const cartData = await apiClient.getCart();
+        const cartData = await api.getCart();
         console.log('Cart loaded:', cartData);
         
         setCart(cartData);
@@ -84,7 +84,7 @@ const CartPage: React.FC = () => {
   const refreshCart = async () => {
     setLoading(true);
     try {
-      const cartData = await apiClient.getCart();
+      const cartData = await api.getCart();
       setCart(cartData);
       toast.success(`Cart refreshed with ${cartData.items.length} items!`);
     } catch (error) {
@@ -99,7 +99,7 @@ const CartPage: React.FC = () => {
   const handleRemoveItem = async (itemId: string) => {
     setUpdatingItems(prev => new Set(prev).add(itemId));
     try {
-      const updatedCart = await apiClient.removeFromCart(itemId);
+      const updatedCart = await api.removeFromCart(itemId);
       setCart(updatedCart);
     } catch (error) {
       console.error('Failed to remove item:', error);
@@ -119,7 +119,7 @@ const CartPage: React.FC = () => {
     
     setUpdatingItems(prev => new Set(prev).add(itemId));
     try {
-      const updatedCart = await apiClient.updateCartItem(itemId, newQuantity);
+      const updatedCart = await api.updateCartItem(itemId, newQuantity);
       setCart(updatedCart);
     } catch (error) {
       console.error('Failed to update quantity:', error);
@@ -140,7 +140,7 @@ const CartPage: React.FC = () => {
     setCheckingOut(true);
     try {
       console.log('Starting checkout process...');
-      const order = await apiClient.checkout(cart);
+      const order = await api.checkout(cart);
       console.log('Order created:', order);
       
       toast.success('Order placed successfully!');
