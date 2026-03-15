@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bell, 
   CheckCircle2, 
   AlertTriangle, 
   Info, 
-  ShoppingBag,
   DollarSign,
-  TrendingUp,
-  Shield,
   Clock,
   Trash2,
   Check,
   Filter,
-  X
+  Loader
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { api } from '../services/api';
+import type { AppNotification } from '../services/api';
 
 type NotificationType = 'success' | 'warning' | 'info' | 'transaction';
 
@@ -27,6 +26,41 @@ interface Notification {
   read: boolean;
   icon?: any;
 }
+
+const mapAppNotificationToLocal = (apiNotif: AppNotification): Notification => {
+  let type: NotificationType = 'info';
+  if (
+    apiNotif.type === 'login_success' || 
+    apiNotif.type === 'deposit_confirmed' || 
+    apiNotif.type === 'kyc_approved'
+  ) {
+    type = 'success';
+  } else if (
+    apiNotif.type === 'kyc_rejected' || 
+    apiNotif.type.includes('warning')
+  ) {
+    type = 'warning';
+  } else if (apiNotif.type === 'order_created' || apiNotif.type.includes('order')) {
+    type = 'transaction';
+  }
+
+  // Simple relative time formatter
+  const timeDiff = Math.floor((new Date().getTime() - new Date(apiNotif.created_at).getTime()) / 1000); // seconds
+  let timeStr = '';
+  if (timeDiff < 60) timeStr = `${timeDiff}s ago`;
+  else if (timeDiff < 3600) timeStr = `${Math.floor(timeDiff / 60)}m ago`;
+  else if (timeDiff < 86400) timeStr = `${Math.floor(timeDiff / 3600)}h ago`;
+  else timeStr = `${Math.floor(timeDiff / 86400)}d ago`;
+
+  return {
+    id: apiNotif.id,
+    type,
+    title: apiNotif.title,
+    message: apiNotif.message,
+    time: timeStr,
+    read: apiNotif.is_read
+  };
+};
 
 const NotificationCard = ({ notification, onMarkRead, onDelete }: { 
   notification: Notification, 
@@ -74,9 +108,9 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }: {
         backgroundColor: notification.read ? '#0d0d12' : 'rgba(0, 242, 255, 0.03)',
         border: `1px solid ${notification.read ? 'rgba(255,255,255,0.05)' : 'rgba(0, 242, 255, 0.1)'}`,
         borderRadius: '20px',
-        padding: '20px',
+        padding: '16px', // Reduced padding for mobile
         display: 'flex',
-        gap: '16px',
+        gap: '12px', // Reduced gap for mobile
         position: 'relative',
         overflow: 'hidden'
       }}
@@ -108,9 +142,9 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }: {
 
       <motion.div
         style={{
-          width: '48px',
-          height: '48px',
-          borderRadius: '14px',
+          width: '40px', // Smaller icon for mobile
+          height: '40px',
+          borderRadius: '12px',
           backgroundColor: `${getColor()}15`,
           color: getColor(),
           display: 'flex',
@@ -127,10 +161,11 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }: {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
           <h4 style={{ 
-            fontSize: '16px', 
+            fontSize: '15px', // Slightly smaller font
             fontWeight: '800', 
             color: notification.read ? '#a0a0b8' : 'white',
-            marginBottom: '4px'
+            marginBottom: '4px',
+            lineHeight: '1.2'
           }}>
             {notification.title}
           </h4>
@@ -142,14 +177,14 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }: {
           </div>
         </div>
         <p style={{ 
-          fontSize: '14px', 
+          fontSize: '13px', // Smaller font for message
           color: '#a0a0b8', 
           lineHeight: '1.5',
           marginBottom: '12px'
         }}>
           {notification.message}
         </p>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {!notification.read && (
             <motion.button
               onClick={() => onMarkRead(notification.id)}
@@ -158,7 +193,7 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }: {
                 color: '#00f2ff',
                 padding: '6px 12px',
                 borderRadius: '8px',
-                fontSize: '12px',
+                fontSize: '11px',
                 fontWeight: '800',
                 display: 'flex',
                 alignItems: 'center',
@@ -171,7 +206,7 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }: {
               }}
               whileTap={{ scale: 0.95 }}
             >
-              <Check size={14} />
+              <Check size={12} />
               Mark Read
             </motion.button>
           )}
@@ -182,7 +217,7 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }: {
               color: '#ff4b4b',
               padding: '6px 12px',
               borderRadius: '8px',
-              fontSize: '12px',
+              fontSize: '11px',
               fontWeight: '800',
               display: 'flex',
               alignItems: 'center',
@@ -195,7 +230,7 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }: {
             }}
             whileTap={{ scale: 0.95 }}
           >
-            <Trash2 size={14} />
+            <Trash2 size={12} />
             Delete
           </motion.button>
         </div>
@@ -206,109 +241,94 @@ const NotificationCard = ({ notification, onMarkRead, onDelete }: {
 
 const Notifications: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'success',
-      title: 'Order Delivered Successfully',
-      message: 'Your Chase High-Balance Personal Log has been delivered. Check your email for access credentials.',
-      time: '2m ago',
-      read: false
-    },
-    {
-      id: '2',
-      type: 'transaction',
-      title: 'Payment Confirmed',
-      message: 'Your BTC payment of $450.00 has been confirmed with 3 blockchain confirmations.',
-      time: '15m ago',
-      read: false,
-      icon: <DollarSign size={20} />
-    },
-    {
-      id: '3',
-      type: 'info',
-      title: 'New Products Available',
-      message: 'Fresh Wells Fargo Business logs just dropped in the marketplace. Limited quantity available.',
-      time: '1h ago',
-      read: false,
-      icon: <ShoppingBag size={20} />
-    },
-    {
-      id: '4',
-      type: 'warning',
-      title: 'Security Alert',
-      message: 'New login detected from IP 192.168.1.1. If this wasn\'t you, please secure your account immediately.',
-      time: '3h ago',
-      read: true
-    },
-    {
-      id: '5',
-      type: 'success',
-      title: 'Wallet Topped Up',
-      message: 'Your wallet has been credited with $500.00. Transaction ID: TXN-9824-B1XC',
-      time: '5h ago',
-      read: true,
-      icon: <DollarSign size={20} />
-    },
-    {
-      id: '6',
-      type: 'info',
-      title: 'Price Drop Alert',
-      message: 'PayPal Aged Accounts are now 20% off for the next 24 hours. Don\'t miss out!',
-      time: '1d ago',
-      read: true,
-      icon: <TrendingUp size={20} />
-    },
-    {
-      id: '7',
-      type: 'transaction',
-      title: 'Transfer Completed',
-      message: 'Your global wire transfer of $2,400 has been successfully processed and delivered.',
-      time: '2d ago',
-      read: true,
-      icon: <CheckCircle2 size={20} />
-    },
-    {
-      id: '8',
-      type: 'info',
-      title: 'Account Verified',
-      message: 'Your KUDZNED account has been fully verified. You now have access to premium features.',
-      time: '3d ago',
-      read: true,
-      icon: <Shield size={20} />
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+
+  useEffect(() => {
+    fetchNotifications();
+    
+    // Fallback unread fetch trigger
+    const fetchUnread = () => {
+      fetchNotifications();
+    };
+    
+    window.addEventListener('notificationUpdated', fetchUnread);
+    return () => {
+      window.removeEventListener('notificationUpdated', fetchUnread);
+    };
+  }, []);
+
+  const fetchNotifications = async (isLoadMore = false) => {
+    try {
+      if (!isLoadMore) setLoading(true);
+      const currentPage = isLoadMore ? page + 1 : 1;
+      const res = await api.getNotifications(currentPage, 20);
+      const localNotifications = res.data.map(mapAppNotificationToLocal);
+
+      if (isLoadMore) {
+        setNotifications((prev) => {
+          // preserve unread statuses across app fetches if needed, but here we just merge
+          const newIds = localNotifications.map((n) => n.id);
+          const filteredPrev = prev.filter((p) => !newIds.includes(p.id));
+          return [...filteredPrev, ...localNotifications];
+        });
+        setPage(currentPage);
+      } else {
+        setNotifications(localNotifications);
+        setPage(1);
+      }
+      
+      setHasMore(res.metadata?.hasNext || false);
+    } catch (error) {
+      console.error('Failed to fetch notifications', error);
+    } finally {
+      if (!isLoadMore) setLoading(false);
     }
-  ]);
+  };
 
   const unreadCount = notifications.filter(n => !n.read).length;
   const filteredNotifications = filter === 'unread' 
     ? notifications.filter(n => !n.read)
     : notifications;
 
-  const handleMarkRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+  const handleMarkRead = async (id: string) => {
+    try {
+      await api.markNotificationAsRead(id);
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, read: true } : n)
+      );
+    } catch (error) {
+      console.error('Failed to mark as read', error);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deleteNotification(id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch (error) {
+      console.error('Failed to delete notification', error);
+    }
   };
 
-  const handleMarkAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  const handleClearAll = () => {
-    setNotifications([]);
+  const handleMarkAllRead = async () => {
+    try {
+      await api.markAllNotificationsAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (error) {
+      console.error('Failed to mark all as read', error);
+    }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', maxWidth: '900px', margin: '0 auto' }}>
       {/* Header */}
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: '16px' }}>
+        <div className="responsive-flex stack-on-mobile" style={{ marginBottom: '16px' }}>
           <div>
-            <h3 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <h3 style={{ fontSize: 'clamp(22px, 5vw, 28px)', fontWeight: '900', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <motion.div
                 animate={{ rotate: [0, -15, 15, -15, 0] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -317,7 +337,7 @@ const Notifications: React.FC = () => {
               </motion.div>
               Notifications
             </h3>
-            <p style={{ color: '#a0a0b8', fontSize: '16px' }}>
+            <p style={{ color: '#a0a0b8', fontSize: '14px' }}>
               Stay updated with your account activity and marketplace alerts.
             </p>
           </div>
@@ -360,8 +380,8 @@ const Notifications: React.FC = () => {
         </div>
 
         {/* Filter & Actions */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="responsive-flex stack-on-mobile">
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <motion.button
               onClick={() => setFilter('all')}
               style={{
@@ -426,84 +446,92 @@ const Notifications: React.FC = () => {
                 Mark All Read
               </motion.button>
             )}
-            {notifications.length > 0 && (
-              <motion.button
-                onClick={handleClearAll}
-                style={{
-                  backgroundColor: 'rgba(255, 75, 75, 0.1)',
-                  color: '#ff4b4b',
-                  padding: '10px 16px',
-                  borderRadius: '12px',
-                  fontWeight: '800',
-                  fontSize: '14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  border: '1px solid rgba(255, 75, 75, 0.2)'
-                }}
-                whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 75, 75, 0.15)' }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <X size={16} />
-                Clear All
-              </motion.button>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Notifications List */}
-      <motion.div
-        style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
-        layout
-      >
-        {filteredNotifications.length > 0 ? (
-          filteredNotifications.map((notification, index) => (
-            <motion.div
-              key={notification.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.3 }}
-            >
-              <NotificationCard
-                notification={notification}
-                onMarkRead={handleMarkRead}
-                onDelete={handleDelete}
-              />
-            </motion.div>
-          ))
-        ) : (
+      {loading && notifications.length === 0 ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+          <Loader className="animate-spin" size={32} color="#00f2ff" />
+        </div>
+      ) : (
+        <>
+          {/* Notifications List */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            style={{
-              textAlign: 'center',
-              padding: '80px 40px',
-              backgroundColor: '#0d0d12',
-              borderRadius: '32px',
-              border: '1px solid rgba(255,255,255,0.05)'
-            }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+            layout
           >
-            <motion.div
-              animate={{ 
-                y: [0, -10, 0],
-                opacity: [0.3, 0.5, 0.3]
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Bell size={64} color="#6b6b7d" style={{ marginBottom: '24px' }} />
-            </motion.div>
-            <h4 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>
-              {filter === 'unread' ? 'All caught up!' : 'No notifications yet'}
-            </h4>
-            <p style={{ color: '#a0a0b8' }}>
-              {filter === 'unread' 
-                ? 'You\'ve read all your notifications. Great job staying on top of things!'
-                : 'When you receive notifications, they\'ll appear here.'}
-            </p>
+            {filteredNotifications.length > 0 ? (
+              filteredNotifications.map((notification, index) => (
+                <motion.div
+                  key={notification.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.3 }}
+                >
+                  <NotificationCard
+                    notification={notification}
+                    onMarkRead={handleMarkRead}
+                    onDelete={handleDelete}
+                  />
+                </motion.div>
+              ))
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={{
+                  textAlign: 'center',
+                  padding: '80px 40px',
+                  backgroundColor: '#0d0d12',
+                  borderRadius: '32px',
+                  border: '1px solid rgba(255,255,255,0.05)'
+                }}
+              >
+                <motion.div
+                  animate={{ 
+                    y: [0, -10, 0],
+                    opacity: [0.3, 0.5, 0.3]
+                  }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <Bell size={64} color="#6b6b7d" style={{ marginBottom: '24px' }} />
+                </motion.div>
+                <h4 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>
+                  {filter === 'unread' ? 'All caught up!' : 'No notifications yet'}
+                </h4>
+                <p style={{ color: '#a0a0b8' }}>
+                  {filter === 'unread' 
+                    ? 'You\'ve read all your notifications. Great job staying on top of things!'
+                    : 'When you receive notifications, they\'ll appear here.'}
+                </p>
+              </motion.div>
+            )}
+            
+            {hasMore && filter === 'all' && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                <motion.button
+                  onClick={() => fetchNotifications(true)}
+                  style={{
+                    backgroundColor: 'rgba(0, 242, 255, 0.05)',
+                    color: '#00f2ff',
+                    padding: '12px 24px',
+                    borderRadius: '12px',
+                    fontWeight: '800',
+                    fontSize: '14px',
+                    border: '1px solid rgba(0, 242, 255, 0.2)',
+                    cursor: 'pointer'
+                  }}
+                  whileHover={{ scale: 1.05, backgroundColor: 'rgba(0, 242, 255, 0.1)' }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {loading ? 'Loading...' : 'Load More'}
+                </motion.button>
+              </div>
+            )}
           </motion.div>
-        )}
-      </motion.div>
+        </>
+      )}
     </div>
   );
 };

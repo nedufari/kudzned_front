@@ -35,9 +35,28 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading] = useState(false); // Start as false, no auto-loading
+  const [isLoading, setIsLoading] = useState(true);
 
   const isAuthenticated = !!user;
+
+  // Restore session on mount
+  React.useEffect(() => {
+    const initAuth = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        try {
+          const currentUser = await api.getCurrentUser();
+          setUser(currentUser);
+        } catch (error) {
+          console.error('Failed to restore session:', error);
+          api.clearToken();
+        }
+      }
+      setIsLoading(false);
+    };
+
+    initAuth();
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {

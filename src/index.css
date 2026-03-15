@@ -112,6 +112,24 @@ h1, h2, h3, h4, h5, h6 {
   .sm\:rounded-3xl { border-radius: 24px !important; }
 }
 
+/* Custom Responsive Helpers */
+.responsive-flex {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .stack-on-mobile {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+}
+
 @media (min-width: 1025px) {
   .lg-flex { display: flex !important; }
   .lg-grid { display: grid !important; }

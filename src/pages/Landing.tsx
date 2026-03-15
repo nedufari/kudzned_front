@@ -10,9 +10,11 @@ import {
   Twitter,
   Github,
   MessageSquare,
-  Layout
+  Layout,
+  LogOut
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
 
 const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: any) => (
   <motion.div 
@@ -68,6 +70,8 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: any) => (
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, logout, isLoading } = useAuth();
+  
   return (
     <motion.nav 
       initial={{ y: -100 }}
@@ -111,23 +115,48 @@ const Navbar = () => {
            ))}
         </div>
 
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <motion.button 
-            onClick={() => navigate('/login')}
-            style={{ fontSize: '14px', fontWeight: '700', color: 'white', padding: '10px 20px' }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Login
-          </motion.button>
-          <motion.button 
-            onClick={() => navigate('/login')}
-            style={{ backgroundColor: '#00f2ff', color: '#000', padding: '10px 24px', borderRadius: '12px', fontWeight: '800', fontSize: '14px' }}
-            whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 242, 255, 0.4)' }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Get Started
-          </motion.button>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {isLoading ? (
+            <div style={{ width: '100px' }} /> // Placeholder to prevent jump
+          ) : !isAuthenticated ? (
+            <>
+              <motion.button 
+                onClick={() => navigate('/login')}
+                style={{ fontSize: '14px', fontWeight: '700', color: 'white', padding: '10px 20px' }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Login
+              </motion.button>
+              <motion.button 
+                onClick={() => navigate('/login')}
+                style={{ backgroundColor: '#00f2ff', color: '#000', padding: '10px 24px', borderRadius: '12px', fontWeight: '800', fontSize: '14px' }}
+                whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 242, 255, 0.4)' }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Get Started
+              </motion.button>
+            </>
+          ) : (
+            <>
+              <motion.button 
+                onClick={() => navigate('/dashboard')}
+                style={{ backgroundColor: 'rgba(0, 242, 255, 0.1)', color: '#00f2ff', padding: '10px 24px', borderRadius: '12px', border: '1px solid rgba(0, 242, 255, 0.2)', fontWeight: '800', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                whileHover={{ scale: 1.05, backgroundColor: 'rgba(0, 242, 255, 0.15)' }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Dashboard <Layout size={16} />
+              </motion.button>
+              <motion.button 
+                onClick={logout}
+                style={{ color: '#ff4b4b', padding: '10px 20px', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Logout <LogOut size={16} />
+              </motion.button>
+            </>
+          )}
         </div>
       </div>
     </motion.nav>
@@ -136,6 +165,8 @@ const Navbar = () => {
 
 const Footer = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  
   return (
     <footer style={{ backgroundColor: '#050505', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '80px 24px 40px 24px' }}>
     <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
@@ -171,7 +202,7 @@ const Footer = () => {
           transition={{ delay: 0.2, duration: 0.6 }}
           style={{ fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: '800', marginBottom: '20px' }}
         >
-          Ready to Scale Your Wealth?
+          {isAuthenticated ? 'Ready to Access Your Assets?' : 'Ready to Scale Your Wealth?'}
         </motion.h2>
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
@@ -180,7 +211,9 @@ const Footer = () => {
           transition={{ delay: 0.3, duration: 0.6 }}
           style={{ color: '#a0a0b8', fontSize: '18px', maxWidth: '600px', margin: '0 auto 32px auto' }}
         >
-          Join 10,000+ investors already benefiting from the KUDZNED marketplace.
+          {isAuthenticated 
+            ? 'Continue trading and managing your digital portfolio on our advanced dashboard.'
+            : 'Join 10,000+ investors already benefiting from the KUDZNED marketplace.'}
         </motion.p>
         <motion.button 
           initial={{ opacity: 0, scale: 0.9 }}
@@ -193,9 +226,10 @@ const Footer = () => {
             transition: { duration: 0.2 }
           }}
           whileTap={{ scale: 0.95 }}
+          onClick={() => navigate(isAuthenticated ? '/dashboard' : '/login')}
           style={{ backgroundColor: '#00f2ff', color: '#000', padding: '16px 40px', borderRadius: '16px', fontWeight: '900', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '12px', margin: '0 auto' }}
         >
-          Create Free Account 
+          {isAuthenticated ? 'Go to Dashboard' : 'Create Free Account'}
           <motion.div
             animate={{ x: [0, 5, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
@@ -291,6 +325,7 @@ const Footer = () => {
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth();
 
   return (
     <div style={{ backgroundColor: '#050505', color: 'white', minHeight: '100vh', overflowX: 'hidden' }}>
@@ -408,38 +443,44 @@ const Landing = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.8 }}
-            style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}
+            style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center', minHeight: '60px' }}
           >
-            <motion.button 
-              onClick={() => navigate('/login')}
-              style={{ padding: '18px 48px', borderRadius: '18px', backgroundColor: '#00f2ff', color: '#000', fontWeight: '900', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 0 40px rgba(0, 242, 255, 0.2)' }}
-              whileHover={{ 
-                scale: 1.05, 
-                boxShadow: '0 0 60px rgba(0, 242, 255, 0.4)',
-                transition: { duration: 0.2 }
-              }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Enter Marketplace 
-              <motion.div
-                animate={{ x: [0, 5, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <ArrowRight size={20} />
-              </motion.div>
-            </motion.button>
-            <motion.button 
-              style={{ padding: '18px 48px', borderRadius: '18px', backgroundColor: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: '800', fontSize: '18px', border: '1px solid rgba(255,255,255,0.1)' }}
-              whileHover={{ 
-                scale: 1.05,
-                backgroundColor: 'rgba(255,255,255,0.08)',
-                borderColor: 'rgba(255,255,255,0.2)',
-                transition: { duration: 0.2 }
-              }}
-              whileTap={{ scale: 0.95 }}
-            >
-              View Vouches
-            </motion.button>
+            {isLoading ? (
+              <div style={{ height: '60px', width: '200px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '18px' }} className="loading-skeleton" />
+            ) : (
+              <>
+                <motion.button 
+                  onClick={() => navigate(isAuthenticated ? '/dashboard' : '/login')}
+                  style={{ padding: '18px 48px', borderRadius: '18px', backgroundColor: '#00f2ff', color: '#000', fontWeight: '900', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 0 40px rgba(0, 242, 255, 0.2)' }}
+                  whileHover={{ 
+                    scale: 1.05, 
+                    boxShadow: '0 0 60px rgba(0, 242, 255, 0.4)',
+                    transition: { duration: 0.2 }
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {isAuthenticated ? 'Go to Dashboard' : 'Enter Marketplace'}
+                  <motion.div
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <ArrowRight size={20} />
+                  </motion.div>
+                </motion.button>
+                <motion.button 
+                  style={{ padding: '18px 48px', borderRadius: '18px', backgroundColor: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: '800', fontSize: '18px', border: '1px solid rgba(255,255,255,0.1)' }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    backgroundColor: 'rgba(255,255,255,0.08)',
+                    borderColor: 'rgba(255,255,255,0.2)',
+                    transition: { duration: 0.2 }
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  View Vouches
+                </motion.button>
+              </>
+            )}
           </motion.div>
         </motion.div>
       </section>

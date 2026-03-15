@@ -25,6 +25,30 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
+export interface PaginatedApiResponse<T> extends ApiResponse<T> {
+  metadata: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+    hasNext?: boolean;
+    hasPrev?: boolean;
+  };
+}
+
+export interface AppNotification {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  message: string;
+  data: any;
+  is_read: boolean;
+  is_email_sent?: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -1220,6 +1244,75 @@ class ApiClient {
     window.dispatchEvent(
       new CustomEvent("clipDeleted", { detail: { clipId } }),
     );
+  }
+
+  // Notification methods
+  async getNotifications(
+    page = 1,
+    limit = 20,
+  ): Promise<PaginatedApiResponse<AppNotification[]>> {
+    try {
+      const response = await this.request<
+        PaginatedApiResponse<AppNotification[]>
+      >(`/notifications?page=${page}&limit=${limit}`);
+      return response;
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      throw error;
+    }
+  }
+
+  async getUnreadNotifications(): Promise<AppNotification[]> {
+    try {
+      const response = await this.request<ApiResponse<AppNotification[]>>(
+        "/notifications/unread",
+      );
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching unread notifications:", error);
+      return [];
+    }
+  }
+
+  async getUnreadNotificationCount(): Promise<number> {
+    try {
+      const response = await this.request<ApiResponse<number>>(
+        "/notifications/unread/count",
+      );
+      return response.data || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  async markNotificationAsRead(id: string): Promise<void> {
+    await this.request<ApiResponse<{ success: boolean }>>(
+      `/notifications/${id}/read`,
+      {
+        method: "POST",
+      },
+    );
+    window.dispatchEvent(new CustomEvent("notificationUpdated"));
+  }
+
+  async markAllNotificationsAsRead(): Promise<void> {
+    await this.request<ApiResponse<{ success: boolean }>>(
+      "/notifications/read-all",
+      {
+        method: "POST",
+      },
+    );
+    window.dispatchEvent(new CustomEvent("notificationUpdated"));
+  }
+
+  async deleteNotification(id: string): Promise<void> {
+    await this.request<ApiResponse<{ success: boolean }>>(
+      `/notifications/${id}`,
+      {
+        method: "DELETE",
+      },
+    );
+    window.dispatchEvent(new CustomEvent("notificationUpdated"));
   }
 }
 

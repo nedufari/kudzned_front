@@ -11,10 +11,11 @@ import {
   EyeOff
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { api } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -25,11 +26,11 @@ const Login: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await api.login(email, password);
+      await login(email, password);
       navigate('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
-      // Error toast is already shown by the API client
+      // Error toast is already shown by the context/api client
     } finally {
       setIsLoading(false);
     }

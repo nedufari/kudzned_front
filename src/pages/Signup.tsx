@@ -15,10 +15,11 @@ import {
   EyeOff
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { api } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -73,7 +74,7 @@ const Signup: React.FC = () => {
     setError('');
 
     try {
-      await api.register({
+      await register({
         email: formData.email,
         password: formData.password,
         username: formData.username,

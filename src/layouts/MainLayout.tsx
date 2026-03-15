@@ -137,6 +137,7 @@ const MainLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [walletBalance, setWalletBalance] = useState('0.00');
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Load cart count and wallet balance on component mount
   useEffect(() => {
@@ -164,10 +165,20 @@ const MainLayout: React.FC = () => {
       }
     };
 
+    const loadUnreadCount = async () => {
+      try {
+        const count = await api.getUnreadNotificationCount();
+        setUnreadCount(count);
+      } catch (error) {
+        console.error('Failed to load unread count (MainLayout):', error);
+        setUnreadCount(0);
+      }
+    };
+
     // Load data silently without showing errors
     const loadData = async () => {
       try {
-        await Promise.allSettled([loadCartCount(), loadWalletBalance()]);
+        await Promise.allSettled([loadCartCount(), loadWalletBalance(), loadUnreadCount()]);
       } catch (error) {
         console.error('Failed to load MainLayout data:', error);
         // Silently handle errors to prevent duplicate toasts
@@ -190,12 +201,20 @@ const MainLayout: React.FC = () => {
       });
     };
 
+    const handleNotificationUpdate = () => {
+      loadUnreadCount().catch(error => {
+        console.error('Failed to update unread count:', error);
+      });
+    };
+
     window.addEventListener('cartUpdated', handleCartUpdate);
     window.addEventListener('walletUpdated', handleWalletUpdate);
+    window.addEventListener('notificationUpdated', handleNotificationUpdate);
 
     return () => {
       window.removeEventListener('cartUpdated', handleCartUpdate);
       window.removeEventListener('walletUpdated', handleWalletUpdate);
+      window.removeEventListener('notificationUpdated', handleNotificationUpdate);
     };
   }, []);
 
@@ -258,27 +277,29 @@ const MainLayout: React.FC = () => {
           >
             <Bell size={20} color="#a0a0b8" />
           </motion.div>
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [1, 0.5, 1]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            style={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: '#ff00f2',
-              boxShadow: '0 0 10px rgba(255, 0, 242, 0.6)'
-            }}
-          />
+          {unreadCount > 0 && (
+            <motion.div
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [1, 0.5, 1]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: '#ff00f2',
+                boxShadow: '0 0 10px rgba(255, 0, 242, 0.6)'
+              }}
+            />
+          )}
         </button>
       </div>
 
@@ -330,7 +351,7 @@ const MainLayout: React.FC = () => {
           <SidebarLink to="/orders" icon={History} label="My Orders" />
           
           <div style={{ marginTop: 'auto', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <SidebarLink to="/notifications" icon={Bell} label="Notifications" badge="3" />
+            <SidebarLink to="/notifications" icon={Bell} label="Notifications" badge={unreadCount > 0 ? unreadCount.toString() : undefined} />
             <SidebarLink to="/profile" icon={User} label="My Profile" />
             <div 
               onClick={handleLogout}
@@ -388,49 +409,51 @@ const MainLayout: React.FC = () => {
               >
                 <Bell size={22} color="#a0a0b8" />
               </motion.div>
-              <motion.div
-                animate={{
-                  scale: [1, 1.3, 1],
-                  boxShadow: [
-                    '0 0 0px rgba(255, 0, 242, 0)',
-                    '0 0 15px rgba(255, 0, 242, 0.8)',
-                    '0 0 0px rgba(255, 0, 242, 0)'
-                  ]
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                style={{ position: 'absolute', top: -6, right: -6 }}
-              >
+              {unreadCount > 0 && (
                 <motion.div
                   animate={{
-                    backgroundColor: ['#ff00f2', '#ff33f5', '#ff00f2']
+                    scale: [1, 1.3, 1],
+                    boxShadow: [
+                      '0 0 0px rgba(255, 0, 242, 0)',
+                      '0 0 15px rgba(255, 0, 242, 0.8)',
+                      '0 0 0px rgba(255, 0, 242, 0)'
+                    ]
                   }}
                   transition={{
-                    duration: 1.5,
+                    duration: 2,
                     repeat: Infinity,
                     ease: "easeInOut"
                   }}
-                  style={{ 
-                    backgroundColor: '#ff00f2', 
-                    color: 'white', 
-                    fontSize: '11px', 
-                    fontWeight: '900', 
-                    width: '20px', 
-                    height: '20px', 
-                    borderRadius: '50%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    border: '3px solid #050505',
-                    boxShadow: '0 0 15px rgba(255, 0, 242, 0.6)'
-                  }}
+                  style={{ position: 'absolute', top: -6, right: -6 }}
                 >
-                  3
+                  <motion.div
+                    animate={{
+                      backgroundColor: ['#ff00f2', '#ff33f5', '#ff00f2']
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    style={{ 
+                      backgroundColor: '#ff00f2', 
+                      color: 'white', 
+                      fontSize: '11px', 
+                      fontWeight: '900', 
+                      width: '20px', 
+                      height: '20px', 
+                      borderRadius: '50%', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      border: '3px solid #050505',
+                      boxShadow: '0 0 15px rgba(255, 0, 242, 0.6)'
+                    }}
+                  >
+                    {unreadCount}
+                  </motion.div>
                 </motion.div>
-              </motion.div>
+              )}
             </motion.div>
             
             <motion.div 
