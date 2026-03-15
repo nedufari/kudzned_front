@@ -6,7 +6,7 @@ import Shop from './pages/Shop';
 import Topup from './pages/Topup';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Transfers from './pages/Transfers';
+
 import Orders from './pages/Orders';
 import Vouches from './pages/Vouches';
 import CashoutClips from './pages/CashoutClips';
@@ -21,6 +21,7 @@ import CartPage from './pages/CartPage-working';
 import CheckoutPage from './pages/CheckoutPage-working';
 import SuccessPage from './pages/SuccessPage';
 import Notifications from './pages/Notifications';
+import AdminProductManagement from './pages/AdminProductManagement';
 import TelegramButton from './components/TelegramButton';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
         
         {/* Authenticated Dashboard Routes (Shared Sidebar Layout) */}
         <Route element={<MainLayout />}>
+          <Route path="/admin-products" element={<AdminProductManagement />} />
           <Route path="/dashboard" element={<Dashboard />} />
           
           {/* Shop & Marketplace */}
@@ -51,7 +53,7 @@ function App() {
           <Route path="/success" element={<SuccessPage />} />
           
           <Route path="/topup" element={<Topup />} />
-          <Route path="/transfers" element={<Transfers />} />
+
           
           {/* Cashout Clips & Details */}
           <Route path="/cashout-clips" element={<CashoutClips />} />
@@ -72,7 +74,7 @@ function App() {
         </Route>
 
         {/* Catch-all - Redirect to Landing */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>
   );

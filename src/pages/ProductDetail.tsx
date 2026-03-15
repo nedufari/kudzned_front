@@ -452,7 +452,7 @@ const ProductDetail: React.FC = () => {
                fontSize: 'clamp(10px, 2.5vw, 12px)', 
                color: '#6b6b7d' 
              }}>
-               Secured by KUDZNED Escrow System
+               Secured by SONNET Escrow System
              </p>
 
              <div style={{ 

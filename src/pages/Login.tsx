@@ -60,9 +60,9 @@ const Login: React.FC = () => {
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '48px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'linear-gradient(135deg, #00f2ff, #ff00f2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: 'white', fontWeight: 'bold', fontSize: '24px' }}>K</span>
+              <span style={{ color: 'white', fontWeight: 'bold', fontSize: '24px' }}>S</span>
             </div>
-            <h1 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '2px' }}>KUDZNED</h1>
+            <h1 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '2px' }}>SONNET</h1>
           </div>
           
           <div style={{ maxWidth: '480px' }}>
@@ -99,7 +99,7 @@ const Login: React.FC = () => {
         </div>
 
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '24px', color: '#a0a0b8', fontSize: '14px' }}>
-          <span>© 2024 KUDZNED Shop</span>
+          <span>© 2024 SONNET Shop</span>
           <span>Privacy Policy</span>
           <span>Terms</span>
         </div>
@@ -111,9 +111,9 @@ const Login: React.FC = () => {
             {/* Mobile Logo Logo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', marginBottom: '32px' }} className="lg-hidden">
               <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #00f2ff, #ff00f2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ color: 'white', fontWeight: 'bold', fontSize: '20px' }}>K</span>
+                <span style={{ color: 'white', fontWeight: 'bold', fontSize: '20px' }}>S</span>
               </div>
-              <h1 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '2px' }}>KUDZNED</h1>
+              <h1 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '2px' }}>SONNET</h1>
             </div>
 
             <div style={{ textAlign: 'center', marginBottom: '40px' }}>

@@ -104,13 +104,13 @@ const Navbar = () => {
             animate={{ rotate: [0, 5, -5, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
-            <span style={{ color: 'white', fontWeight: 'bold', fontSize: '16px' }}>K</span>
+            <span style={{ color: 'white', fontWeight: 'bold', fontSize: '16px' }}>S</span>
           </motion.div>
-          <span style={{ fontWeight: '900', fontSize: '18px', letterSpacing: '1px' }}>KUDZNED</span>
+          <span style={{ fontWeight: '900', fontSize: '18px', letterSpacing: '1px' }}>SONNET</span>
         </motion.div>
         
         <div style={{ display: 'none' }} className="lg-flex gap-8 items-center">
-           {['Market', 'Transfers', 'Logs', 'Proof'].map(link => (
+           {['Market', 'Logs', 'Proof'].map(link => (
              <a key={link} href="#" style={{ fontSize: '14px', fontWeight: '600', color: '#a0a0b8' }} className="hover:text-[#00f2ff]">{link}</a>
            ))}
         </div>
@@ -213,7 +213,7 @@ const Footer = () => {
         >
           {isAuthenticated 
             ? 'Continue trading and managing your digital portfolio on our advanced dashboard.'
-            : 'Join 10,000+ investors already benefiting from the KUDZNED marketplace.'}
+            : 'Join 10,000+ investors already benefiting from the SONNET marketplace.'}
         </motion.p>
         <motion.button 
           initial={{ opacity: 0, scale: 0.9 }}
@@ -246,19 +246,19 @@ const Footer = () => {
              style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', cursor: 'pointer' }}
            >
             <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #00f2ff, #ff00f2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: 'white', fontWeight: 'bold', fontSize: '20px' }}>K</span>
+              <span style={{ color: 'white', fontWeight: 'bold', fontSize: '20px' }}>S</span>
             </div>
-            <h1 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '1px' }}>KUDZNED</h1>
+            <h1 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '1px' }}>SONNET</h1>
           </div>
           <p style={{ color: '#a0a0b8', fontSize: '15px', lineHeight: '1.6', maxWidth: '300px' }}>
-            The world's most trusted marketplace for premium digital assets, bank logs, and global transfers. Secure, fast, and anonymous.
+            The world's most trusted marketplace for premium digital assets, bank logs, and secure fulfillment. Secure, fast, and anonymous.
           </p>
         </div>
 
         <div>
           <h4 style={{ fontWeight: '800', marginBottom: '24px', fontSize: '14px', textTransform: 'uppercase', color: '#6b6b7d', letterSpacing: '1px' }}>Product</h4>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {['Marketplace', 'Bank Logs', 'Transfers', 'Fullz/SSN', 'Methods'].map(item => (
+            {['Marketplace', 'Bank Logs', 'Fullz/SSN', 'Methods'].map(item => (
               <li key={item}><a href="#" style={{ color: '#a0a0b8', fontSize: '15px' }} className="hover:text-[#00f2ff]">{item}</a></li>
             ))}
           </ul>
@@ -284,7 +284,7 @@ const Footer = () => {
       </div>
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '40px', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '24px', marginBottom: '40px' }}>
-        <p style={{ color: '#6b6b7d', fontSize: '14px' }}>© 2024 KUDZNED Technologies Inc. All rights reserved.</p>
+        <p style={{ color: '#6b6b7d', fontSize: '14px' }}>© 2024 SONNET Technologies Inc. All rights reserved.</p>
         <div style={{ display: 'flex', gap: '24px' }}>
           <Twitter size={20} className="text-[#a0a0b8] hover:text-[#1d9bf0] cursor-pointer" />
           <Github size={20} className="text-[#a0a0b8] hover:text-white cursor-pointer" />
@@ -315,7 +315,7 @@ const Footer = () => {
           whiteSpace: 'nowrap',
           width: 'fit-content'
         }}>
-          KUDZNED
+          SONNET
         </h1>
       </div>
     </div>
@@ -574,7 +574,7 @@ const Landing = () => {
           <FeatureCard 
             icon={Layout} 
             title="Premium Dashboard" 
-            description="Monitor your investments, track active transfers, and manage your wallet with an world-class interface."
+            description="Monitor your investments, track active orders, and manage your wallet with a world-class interface."
             delay={0.3}
           />
         </div>
@@ -606,7 +606,7 @@ const Landing = () => {
               viewport={{ once: true }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <h2 style={{ fontSize: '42px', fontWeight: '800', marginBottom: '24px' }}>The KUDZNED Experience</h2>
+              <h2 style={{ fontSize: '42px', fontWeight: '800', marginBottom: '24px' }}>The SONNET Experience</h2>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {[
                   { title: 'Verified Purchases', desc: 'Each asset is checked for quality before listing.' },

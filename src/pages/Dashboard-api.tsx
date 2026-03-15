@@ -117,7 +117,7 @@ const Dashboard: React.FC = () => {
         }}>
           <div>
             <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>
-              Welcome to KUDZNED Dashboard
+              Welcome to SONNET Dashboard
             </h1>
             <p style={{ color: '#a0a0b8', fontSize: '16px' }}>
               You are successfully logged in!
@@ -213,7 +213,7 @@ const Dashboard: React.FC = () => {
                 borderRadius: '50%', 
                 backgroundColor: '#10b981'
               }} />
-              <span>Connected to KUDZNED Backend</span>
+              <span>Connected to SONNET Backend</span>
             </div>
             <p style={{ color: '#a0a0b8', fontSize: '14px', marginTop: '12px' }}>
               Backend URL: {api['baseURL']}

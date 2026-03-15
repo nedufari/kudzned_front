@@ -137,7 +137,7 @@ const Shop: React.FC = () => {
       
       setCategories([
         { id: '1', name: 'BankLogs', slug: 'bank-logs', description: 'Bank logs', is_active: true, sort_order: 1, created_at: '', updated_at: '' },
-        { id: '2', name: 'Transfer', slug: 'transfer', description: 'Transfers', is_active: true, sort_order: 2, created_at: '', updated_at: '' }
+        { id: '2', name: 'Methods', slug: 'methods', description: 'Premium Methods', is_active: true, sort_order: 2, created_at: '', updated_at: '' }
       ]);
       
       setDataLoaded(true);

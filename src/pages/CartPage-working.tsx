@@ -577,7 +577,7 @@ const CartPage: React.FC = () => {
                   color: '#a0a0b8',
                   lineHeight: '1.4'
                 }}>
-                  Every transaction is secured by KUDZNED Escrow system. Guaranteed or money back.
+                  Every transaction is secured by SONNET Escrow system. Guaranteed or money back.
                 </p>
              </div>
           </div>

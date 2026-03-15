@@ -9,14 +9,16 @@ import {
   Wallet,
   Loader2
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const CheckoutPage: React.FC = () => {
+  const { user: authUser } = useAuth();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('crypto');
   const [processing, setProcessing] = useState(false);
 
-  // Static data - no API calls
-  const user = {
+  // Static data - fallback
+  const user = authUser || {
     email: 'nedufranco@gmail.com'
   };
 

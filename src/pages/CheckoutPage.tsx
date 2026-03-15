@@ -9,6 +9,7 @@ import {
   Wallet,
   Loader2
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 // Define types locally to avoid API import issues
 
@@ -18,12 +19,12 @@ import {
 
 
 const CheckoutPage: React.FC = () => {
+  const { user: authUser } = useAuth();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('crypto');
   const [processing, setProcessing] = useState(false);
 
-  // Use mock data that works - no useEffect, no API calls that cause blank screens
-  const mockUser = {
+  const user = authUser || {
     id: 'user-1',
     email: 'nedufranco@gmail.com',
     username: 'nedufari',
@@ -58,7 +59,6 @@ const CheckoutPage: React.FC = () => {
   };
 
   const cart = mockCart;
-  const user = mockUser;
   const subtotal = cart.total;
 
   const handleCompletePayment = async () => {

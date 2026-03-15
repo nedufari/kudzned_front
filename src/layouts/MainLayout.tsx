@@ -10,15 +10,17 @@ import {
   Video, 
   LogOut,
   PlusCircle,
-  CreditCard,
+
   ChevronRight,
   Menu,
   X,
   Bell,
-  ShoppingCart
+  ShoppingCart,
+  Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const SidebarLink = ({ to, icon: Icon, label, badge, onClick }: { to: string, icon: any, label: string, badge?: string, onClick?: () => void }) => (
   <NavLink 
@@ -133,6 +135,7 @@ const SidebarLink = ({ to, icon: Icon, label, badge, onClick }: { to: string, ic
 );
 
 const MainLayout: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
@@ -263,9 +266,9 @@ const MainLayout: React.FC = () => {
           style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
         >
           <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #00f2ff, #ff00f2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: 'white', fontWeight: '900', fontSize: '14px' }}>K</span>
+            <span style={{ color: 'white', fontWeight: '900', fontSize: '14px' }}>S</span>
           </div>
-          <span style={{ fontWeight: '800', letterSpacing: '1px', fontSize: '16px' }}>KUDZNED</span>
+          <span style={{ fontWeight: '800', letterSpacing: '1px', fontSize: '16px' }}>SONNET</span>
         </div>
         <button 
           onClick={() => navigate('/notifications')}
@@ -317,10 +320,10 @@ const MainLayout: React.FC = () => {
             style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
           >
             <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #00f2ff, #ff00f2)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(0, 242, 255, 0.2)' }}>
-              <span style={{ color: 'white', fontWeight: '900', fontSize: '20px' }}>K</span>
+              <span style={{ color: 'white', fontWeight: '900', fontSize: '20px' }}>S</span>
             </div>
             <h1 style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '1.5px', color: 'white', margin: 0 }}>
-              KUDZNED
+              SONNET
             </h1>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} style={{ display: 'none' }} className="lg:hidden p-2">
@@ -341,7 +344,7 @@ const MainLayout: React.FC = () => {
           <SidebarLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
           <SidebarLink to="/shop" icon={ShoppingBag} label="Shop" badge="NEW" />
           <SidebarLink to="/topup" icon={PlusCircle} label="Topups" />
-          <SidebarLink to="/transfers" icon={CreditCard} label="Transfers" />
+
           <SidebarLink to="/cart" icon={ShoppingCart} label="My Cart" badge={cartItemCount > 0 ? cartItemCount.toString() : undefined} />
           
           <div style={{ padding: '32px 16px 12px 16px', fontSize: '11px', fontWeight: '800', color: '#4b4b5e', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Support & Info</div>
@@ -349,6 +352,13 @@ const MainLayout: React.FC = () => {
           <SidebarLink to="/cashout-clips" icon={Video} label="Cashout Clips" />
           <SidebarLink to="/vouches" icon={MessageSquare} label="Vouches" />
           <SidebarLink to="/orders" icon={History} label="My Orders" />
+          
+          {user?.role?.toLowerCase() === 'admin' && (
+            <>
+              <div style={{ padding: '32px 16px 12px 16px', fontSize: '11px', fontWeight: '800', color: '#4b4b5e', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Administration</div>
+              <SidebarLink to="/admin-products" icon={Settings} label="Product Management" />
+            </>
+          )}
           
           <div style={{ marginTop: 'auto', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <SidebarLink to="/notifications" icon={Bell} label="Notifications" badge={unreadCount > 0 ? unreadCount.toString() : undefined} />
@@ -369,7 +379,7 @@ const MainLayout: React.FC = () => {
       <main className="content-wrapper">
         <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div style={{ textAlign: 'left' }}>
-            <h2 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '4px', textAlign: 'left', color: 'white' }}>Welcome Back, <span style={{ color: '#00f2ff' }}>Nedu</span></h2>
+            <h2 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '4px', textAlign: 'left', color: 'white' }}>Welcome Back, <span style={{ color: '#00f2ff' }}>{user?.username || 'User'}</span></h2>
             <p style={{ color: '#a0a0b8', fontSize: '16px', textAlign: 'left' }}>Market is booming. Check out the latest logs.</p>
           </div>
           
@@ -531,7 +541,7 @@ const MainLayout: React.FC = () => {
             </motion.div>
 
             <div style={{ width: '48px', height: '48px', borderRadius: '16px', border: '2px solid rgba(0,242,255,0.3)', padding: '2px', cursor: 'pointer', transition: 'all 0.2s' }} className="hover:border-[#00f2ff]">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Nedu" alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '12px' }} />
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'User'}`} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '12px' }} />
             </div>
           </div>
         </header>

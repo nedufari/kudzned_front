@@ -412,6 +412,39 @@ export interface ClipFilters {
   is_featured?: boolean;
 }
 
+export interface CreateProductRequest {
+  title: string;
+  description: string;
+  category_id: string;
+  price: number;
+  image?: File;
+  additional_images?: File[];
+  tags?: string[];
+  status?: string;
+  availability?: string;
+  digital_file?: File;
+}
+
+export interface UpdateProductRequest {
+  title?: string;
+  description?: string;
+  category_id?: string;
+  price?: number;
+  image?: File;
+  additional_images?: File[];
+  tags?: string[];
+  status?: string;
+  availability?: string;
+  digital_file?: File;
+}
+
+export interface CreateCategoryRequest {
+  name: string;
+  description?: string;
+  is_active?: boolean;
+  sort_order?: number;
+}
+
 // Simple API client class
 class ApiClient {
   private baseURL: string;
@@ -1313,6 +1346,128 @@ class ApiClient {
       },
     );
     window.dispatchEvent(new CustomEvent("notificationUpdated"));
+  }
+
+  // Admin and Product Management methods
+  async createProduct(productData: CreateProductRequest): Promise<Product> {
+    const formData = new FormData();
+    formData.append("title", productData.title);
+    formData.append("description", productData.description);
+    formData.append("category_id", productData.category_id);
+    formData.append("price", productData.price.toString());
+
+    if (productData.image) formData.append("image", productData.image);
+
+    if (productData.additional_images?.length) {
+      productData.additional_images.forEach((file) => {
+        formData.append("additional_images", file);
+      });
+    }
+
+    if (productData.tags?.length) {
+      formData.append("tags", productData.tags.join(","));
+    }
+
+    if (productData.status) formData.append("status", productData.status);
+    if (productData.availability)
+      formData.append("availability", productData.availability);
+
+    if (productData.digital_file) {
+      formData.append("digital_file", productData.digital_file);
+    }
+
+    const response = await this.request<ApiResponse<ApiProduct>>("/products", {
+      method: "POST",
+      body: formData,
+    });
+
+    const apiProduct = response.data;
+    return {
+      id: apiProduct.id,
+      name: apiProduct.title,
+      description: apiProduct.description,
+      price: parseFloat(apiProduct.price) / 100,
+      category: apiProduct.category?.name || "Unknown",
+      category_id: apiProduct.category_id,
+      stock: 100,
+      image_url: apiProduct.images?.[0] || undefined,
+      is_active: apiProduct.status === "active",
+      created_at: apiProduct.created_at,
+      updated_at: apiProduct.updated_at,
+    };
+  }
+
+  async updateAdminProduct(
+    id: string,
+    productData: UpdateProductRequest,
+  ): Promise<Product> {
+    const formData = new FormData();
+    if (productData.title) formData.append("title", productData.title);
+    if (productData.description)
+      formData.append("description", productData.description);
+    if (productData.category_id)
+      formData.append("category_id", productData.category_id);
+    if (productData.price !== undefined)
+      formData.append("price", productData.price.toString());
+
+    if (productData.image) formData.append("image", productData.image);
+
+    if (productData.additional_images?.length) {
+      productData.additional_images.forEach((file) => {
+        formData.append("additional_images", file);
+      });
+    }
+
+    if (productData.tags?.length) {
+      formData.append(
+        "tags",
+        Array.isArray(productData.tags)
+          ? productData.tags.join(",")
+          : productData.tags,
+      );
+    }
+
+    if (productData.status) formData.append("status", productData.status);
+    if (productData.availability)
+      formData.append("availability", productData.availability);
+
+    if (productData.digital_file) {
+      formData.append("digital_file", productData.digital_file);
+    }
+
+    const response = await this.request<ApiResponse<ApiProduct>>(
+      `/products/${id}`,
+      {
+        method: "PUT",
+        body: formData,
+      },
+    );
+
+    const apiProduct = response.data;
+    return {
+      id: apiProduct.id,
+      name: apiProduct.title,
+      description: apiProduct.description,
+      price: parseFloat(apiProduct.price) / 100,
+      category: apiProduct.category?.name || "Unknown",
+      category_id: apiProduct.category_id,
+      stock: 100,
+      image_url: apiProduct.images?.[0] || undefined,
+      is_active: apiProduct.status === "active",
+      created_at: apiProduct.created_at,
+      updated_at: apiProduct.updated_at,
+    };
+  }
+
+  async createCategory(categoryData: CreateCategoryRequest): Promise<Category> {
+    const response = await this.request<ApiResponse<Category>>(
+      "/products/categories",
+      {
+        method: "POST",
+        body: JSON.stringify(categoryData),
+      },
+    );
+    return response.data;
   }
 }
 

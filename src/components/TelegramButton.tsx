@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 const TelegramButton = () => {
   return (
     <motion.a
-      href="https://t.me/kudzned"
+      href="https://t.me/sonnet"
       target="_blank"
       rel="noopener noreferrer"
       initial={{ scale: 0, opacity: 0 }}

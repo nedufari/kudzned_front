@@ -47,7 +47,7 @@ const Profile: React.FC = () => {
         <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }} className="sm:p-10">
           <div style={{ position: 'relative', marginBottom: '20px' }} className="sm:mb-6">
             <div style={{ width: '100px', height: '100px', borderRadius: '32px', border: '3px solid #00f2ff', padding: '4px', cursor: 'pointer', transition: 'all 0.2s' }} className="hover:scale-110 sm:w-[120px] sm:h-[120px]">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Nedu" alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '24px' }} className="sm:rounded-3xl" />
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '24px' }} className="sm:rounded-3xl" />
             </div>
             <button style={{ position: 'absolute', bottom: '0', right: '0', backgroundColor: '#00f2ff', color: '#000', padding: '8px', borderRadius: '12px', border: '4px solid #0d0d12' }} className="sm:p-2">
               <Camera size={18} className="sm:w-5 sm:h-5" />
@@ -134,7 +134,7 @@ const Profile: React.FC = () => {
            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'rgba(255,75,75,0.05)', border: '1px solid rgba(255,75,75,0.1)', padding: '16px', borderRadius: '16px' }} className="sm:flex-row sm:justify-between sm:items-center sm:p-5">
               <div>
                 <p style={{ fontSize: '14px', fontWeight: '800' }} className="sm:text-sm">Deactivate Account</p>
-                <p style={{ fontSize: '12px', color: '#a0a0b8' }} className="sm:text-xs">This will instantly disable your access to KUDZNED.</p>
+                <p style={{ fontSize: '12px', color: '#a0a0b8' }} className="sm:text-xs">This will instantly disable your access to SONNET.</p>
               </div>
               <button style={{ backgroundColor: '#ff4b4b', color: 'white', padding: '10px 16px', borderRadius: '10px', fontWeight: '800', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }} className="sm:text-sm">
                  <Trash2 size={16} className="sm:w-4 sm:h-4" />

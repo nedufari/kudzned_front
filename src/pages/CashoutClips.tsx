@@ -57,7 +57,7 @@ const CashoutClips: React.FC = () => {
        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h3 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '8px' }}>Cashout Proof Gallery</h3>
-          <p style={{ color: '#a0a0b8', fontSize: '16px' }}>Visual proof of successful cashouts and transfers from the KUDZNED marketplace.</p>
+          <p style={{ color: '#a0a0b8', fontSize: '16px' }}>Visual proof of successful cashouts and transfers from the SONNET marketplace.</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '10px 16px', borderRadius: '14px', fontSize: '12px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '8px' }}>

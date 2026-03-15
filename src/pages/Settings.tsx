@@ -71,7 +71,7 @@ const Settings: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '900px' }} className="sm:gap-8">
       <div>
         <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }} className="sm:text-2xl">Security & Account Settings</h3>
-        <p style={{ color: '#a0a0b8', fontSize: '14px' }} className="sm:text-sm">Configure your privacy, security, and interface preferences on KUDZNED.</p>
+        <p style={{ color: '#a0a0b8', fontSize: '14px' }} className="sm:text-sm">Configure your privacy, security, and interface preferences on SONNET.</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }} className="sm:grid sm:grid-cols-2 sm:gap-6">
@@ -141,7 +141,7 @@ const Settings: React.FC = () => {
              </div>
              <div>
                <p style={{ fontSize: '15px', fontWeight: '900' }} className="sm:text-base">Session Identity: Verified</p>
-               <p style={{ fontSize: '12px', color: '#a0a0b8' }} className="sm:text-xs">Your connection to KUDZNED is encrypted with RSA-4096.</p>
+               <p style={{ fontSize: '12px', color: '#a0a0b8' }} className="sm:text-xs">Your connection to SONNET is encrypted with RSA-4096.</p>
              </div>
           </div>
           <button style={{ color: '#00f2ff', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }} className="hover:underline sm:text-sm">
