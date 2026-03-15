@@ -22,6 +22,7 @@ interface Product {
   price: number;
   category: string;
   stock: number;
+  image_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -73,50 +74,79 @@ const ProductCard = ({ product, onAddToCart }: { product: Product; onAddToCart: 
       onClick={() => navigate(`/shop/${product.id}`)}
       className="group"
     >
-      {/* Product Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+      {/* Product Image Area */}
+      <div style={{ 
+        width: '100%', 
+        height: '160px', 
+        borderRadius: '16px', 
+        backgroundColor: '#16161e', 
+        overflow: 'hidden', 
+        position: 'relative',
+        marginBottom: '4px'
+      }}>
+        {product.image_url ? (
+          <img 
+            src={product.image_url} 
+            alt={product.name} 
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop`;
+            }}
+          />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.1 }}>
+            <ShoppingBag size={48} />
+          </div>
+        )}
+        
+        {/* Category Overlay */}
         <div style={{ 
-          backgroundColor: 'rgba(0, 242, 255, 0.1)', 
-          padding: 'clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px)', 
-          borderRadius: '10px', 
-          fontSize: 'clamp(9px, 2.5vw, 11px)', 
-          fontWeight: '800', 
-          color: '#00f2ff', 
+          position: 'absolute',
+          top: '12px',
+          left: '12px',
+          backgroundColor: 'rgba(0, 242, 255, 0.9)', 
+          padding: '4px 10px', 
+          borderRadius: '8px', 
+          fontSize: '10px', 
+          fontWeight: '900', 
+          color: '#000', 
           textTransform: 'uppercase', 
-          letterSpacing: '0.5px',
-          flexShrink: 0
+          letterSpacing: '0.5px'
         }}>
           {product.category}
         </div>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '4px', 
-          color: '#f59e0b', 
-          fontSize: 'clamp(10px, 2.5vw, 12px)', 
-          fontWeight: '700',
-          flexShrink: 0
-        }}>
-          <Star size={12} fill="#f59e0b" />
-          4.8
-        </div>
       </div>
 
-      {/* Product Content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'clamp(8px, 2vw, 12px)' }}>
-        <h4 style={{ 
-          fontSize: 'clamp(16px, 4vw, 18px)', 
-          fontWeight: '800', 
-          marginBottom: 0,
-          lineHeight: '1.3',
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden'
-        }}>
-          {product.name}
-        </h4>
-        
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'clamp(12px, 3vw, 16px)' }}>
+        {/* Product Title & Rating */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+          <h4 style={{ 
+            fontSize: 'clamp(16px, 4vw, 18px)', 
+            fontWeight: '800', 
+            marginBottom: 0,
+            lineHeight: '1.3',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            flex: 1
+          }}>
+            {product.name}
+          </h4>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '4px', 
+            color: '#f59e0b', 
+            fontSize: '12px', 
+            fontWeight: '700',
+            flexShrink: 0
+          }}>
+            <Star size={12} fill="#f59e0b" />
+            4.8
+          </div>
+        </div>
+          
         {/* Product Meta */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(8px, 2vw, 12px)' }}>
            <div style={{ 

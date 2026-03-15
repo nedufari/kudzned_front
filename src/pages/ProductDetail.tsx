@@ -204,6 +204,33 @@ const ProductDetail: React.FC = () => {
             borderRadius: 'clamp(16px, 4vw, 32px)', 
             padding: 'clamp(20px, 5vw, 40px)' 
           }}>
+             {/* Product Image */}
+             <div style={{ 
+               width: '100%', 
+               height: 'clamp(200px, 40vh, 400px)', 
+               borderRadius: '24px', 
+               backgroundColor: '#16161e', 
+               overflow: 'hidden', 
+               marginBottom: 'clamp(24px, 6vw, 32px)',
+               position: 'relative',
+               border: '1px solid rgba(255,255,255,0.03)'
+             }}>
+                {product.image_url ? (
+                  <img 
+                    src={product.image_url} 
+                    alt={product.name} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop`;
+                    }}
+                  />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.1 }}>
+                    <ShoppingCart size={80} />
+                  </div>
+                )}
+             </div>
+
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 'clamp(16px, 4vw, 24px)' }}>
                 <div>
                    <div style={{ 
