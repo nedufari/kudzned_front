@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Copy, 
   CheckCircle2, 
@@ -6,9 +6,12 @@ import {
   Clock,
   History,
   AlertTriangle,
-  QrCode
+  QrCode,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { api } from '../services/api';
+import { toast } from '../utils/toast';
 
 const CryptoOption = ({ name, symbol, icon: Icon, active, onClick }: any) => (
   <button
@@ -39,17 +42,70 @@ const CryptoOption = ({ name, symbol, icon: Icon, active, onClick }: any) => (
 );
 
 const Topup: React.FC = () => {
-  const [method, setMethod] = useState('btc');
+  const [method, setMethod] = useState<'BTC' | 'ETH'>('BTC');
+  const [amount, setAmount] = useState('');
   const [copied, setCopied] = useState(false);
-
-  const address = method === 'btc' 
-    ? 'bc1qxy2kg2ryyxpx4lhuv067z8483m3m3j' 
-    : '0x71C7656EC7ab88b098defB751B7401B5f6d8976F';
+  const [loading, setLoading] = useState(false);
+  const [topupData, setTopupData] = useState<{
+    BTC?: {
+      address: string;
+      amount_requested?: number;
+      expires_at: string;
+    };
+    ETH?: {
+      address: string;
+      amount_requested?: number;
+      expires_at: string;
+    };
+  }>({});
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'confirmed'>('idle');
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(address);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const currentAddress = topupData[method]?.address;
+    if (currentAddress) {
+      navigator.clipboard.writeText(currentAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  // Reset amount and payment status when currency changes, but keep address data
+  useEffect(() => {
+    setAmount('');
+    setPaymentStatus('idle');
+  }, [method]);
+
+  const generateAddress = async () => {
+    if (!amount || parseInt(amount) < 1000) {
+      toast.error('Please enter a valid amount (minimum 1000 satoshis/wei)');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await api.createTopup(method, parseInt(amount));
+      setTopupData(prev => ({
+        ...prev,
+        [method]: {
+          address: data.address,
+          amount_requested: data.amount_requested,
+          expires_at: data.expires_at
+        }
+      }));
+      setPaymentStatus('pending');
+      toast.success('Deposit address generated successfully!');
+    } catch (error) {
+      console.error('Failed to generate address:', error);
+      toast.error('Failed to generate deposit address');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const simulatePaymentConfirmation = () => {
+    // In a real app, this would be handled by webhook or polling
+    setPaymentStatus('confirmed');
+    toast.success('Payment confirmed! Your wallet has been credited.');
   };
 
   return (
@@ -63,15 +119,15 @@ const Topup: React.FC = () => {
               name="Bitcoin" 
               symbol="BTC" 
               icon={({ size }: any) => <span style={{ fontSize: size }}>₿</span>} 
-              active={method === 'btc'} 
-              onClick={() => setMethod('btc')} 
+              active={method === 'BTC'} 
+              onClick={() => setMethod('BTC')} 
             />
             <CryptoOption 
               name="Ethereum" 
               symbol="ETH" 
               icon={({ size }: any) => <span style={{ fontSize: size, fontWeight: 'bold' }}>Ξ</span>} 
-              active={method === 'eth'} 
-              onClick={() => setMethod('eth')} 
+              active={method === 'ETH'} 
+              onClick={() => setMethod('ETH')} 
             />
           </div>
         </section>
@@ -93,47 +149,111 @@ const Topup: React.FC = () => {
           }}
           className="sm:p-10 sm:gap-8"
         >
-          <div style={{ backgroundColor: 'white', padding: '12px', borderRadius: '20px', position: 'relative' }} className="sm:p-4">
-            <QrCode size={140} color="#000" className="sm:w-[180px] sm:h-[180px]" />
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-               <div style={{ width: '32px', height: '32px', backgroundColor: 'white', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #00f2ff' }} className="sm:w-10 sm:h-10">
-                 <span style={{ fontWeight: '900', color: '#00f2ff', fontSize: '14px' }} className="sm:text-base">W</span>
-               </div>
+          {/* Amount Input */}
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '8px' }} className="sm:text-xl">Enter Amount</h3>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }} className="sm:gap-4">
+              <div style={{ position: 'relative', flex: 1 }}>
+                <input
+                  type="number"
+                  placeholder={`Amount in ${method === 'BTC' ? 'satoshis' : 'wei'} (min 1000)`}
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  style={{
+                    backgroundColor: '#16161e',
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    borderRadius: '14px',
+                    padding: '16px',
+                    color: 'white',
+                    width: '100%',
+                    fontSize: '14px',
+                    outline: 'none',
+                    transition: 'all 0.2s'
+                  }}
+                  className="focus:border-[#00f2ff]"
+                  min="1000"
+                />
+                <span style={{
+                  position: 'absolute',
+                  right: '16px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#6b6b7d',
+                  fontSize: '12px',
+                  fontWeight: '700'
+                }}>
+                  {method === 'BTC' ? 'sats' : 'wei'}
+                </span>
+              </div>
+              <button
+                onClick={generateAddress}
+                disabled={loading || !amount || parseInt(amount) < 1000}
+                style={{
+                  backgroundColor: loading ? '#6b6b7d' : '#00f2ff',
+                  color: loading ? '#a0a0b8' : '#000',
+                  padding: '16px 24px',
+                  borderRadius: '14px',
+                  fontWeight: '800',
+                  border: 'none',
+                  cursor: loading || !amount || parseInt(amount) < 1000 ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  minWidth: '120px',
+                  justifyContent: 'center'
+                }}
+              >
+                {loading ? <Loader2 size={18} className="animate-spin" /> : 'Generate'}
+              </button>
             </div>
           </div>
+
+          {/* QR Code and Address */}
+          {topupData[method]?.address && (
+            <>
+              <div style={{ backgroundColor: 'white', padding: '12px', borderRadius: '20px', position: 'relative' }} className="sm:p-4">
+                <QrCode size={140} color="#000" className="sm:w-[180px] sm:h-[180px]" />
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '32px', height: '32px', backgroundColor: 'white', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #00f2ff' }} className="sm:w-10 sm:h-10">
+                    <span style={{ fontWeight: '900', color: '#00f2ff', fontSize: '14px' }} className="sm:text-base">W</span>
+                  </div>
+                </div>
+              </div>
 
           <div style={{ textAlign: 'center', width: '100%' }}>
-            <h4 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '8px' }} className="sm:text-lg">Send {method.toUpperCase()} to address</h4>
-            <div style={{ 
-              backgroundColor: '#16161e', 
-              border: '1px solid rgba(255,255,255,0.05)', 
-              borderRadius: '14px', 
-              padding: '12px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px',
-              width: '100%',
-              cursor: 'pointer'
-            }} 
-            className="sm:p-4 sm:gap-3"
-            onClick={handleCopy}>
-              <p style={{ flex: 1, fontFamily: 'monospace', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#00f2ff' }} className="sm:text-sm">
-                {address}
-              </p>
-              {copied ? <CheckCircle2 size={18} className="text-[#10b981]" /> : <Copy size={18} className="text-[#a0a0b8]" />}
-            </div>
-          </div>
-
-          <div style={{ width: '100%' }}>
-            <div style={{ backgroundColor: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.1)', borderRadius: '14px', padding: '14px', display: 'flex', gap: '10px' }} className="sm:p-4 sm:gap-3">
-              <AlertTriangle size={18} className="text-[#f59e0b] shrink-0 sm:w-5 sm:h-5" />
-              <div>
-                <p style={{ fontSize: '11px', fontWeight: '700', color: '#f59e0b', textTransform: 'uppercase', marginBottom: '2px' }} className="sm:text-xs">Important</p>
-                <p style={{ fontSize: '11px', color: '#a0a0b8', lineHeight: '1.4' }} className="sm:text-xs">Only send {method.toUpperCase()} to this address. Credits after 1 confirmation.</p>
+              <h4 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '8px' }} className="sm:text-lg">Send {method} to address</h4>
+              <div style={{ 
+                backgroundColor: '#16161e', 
+                border: '1px solid rgba(255,255,255,0.05)', 
+                borderRadius: '14px', 
+                padding: '12px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px',
+                width: '100%',
+                cursor: topupData[method]?.address ? 'pointer' : 'default'
+              }} 
+              className="sm:p-4 sm:gap-3"
+              onClick={topupData[method]?.address ? handleCopy : undefined}>
+                <p style={{ flex: 1, fontFamily: 'monospace', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: topupData[method]?.address ? '#00f2ff' : '#6b6b7d' }} className="sm:text-sm">
+                  {topupData[method]?.address || 'Generate address to continue'}
+                </p>
+                {topupData[method]?.address && (copied ? <CheckCircle2 size={18} className="text-[#10b981]" /> : <Copy size={18} className="text-[#a0a0b8]" />)}
               </div>
             </div>
-          </div>
-        </motion.div>
+
+            <div style={{ width: '100%' }}>
+              <div style={{ backgroundColor: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.1)', borderRadius: '14px', padding: '14px', display: 'flex', gap: '10px' }} className="sm:p-4 sm:gap-3">
+                <AlertTriangle size={18} className="text-[#f59e0b] shrink-0 sm:w-5 sm:h-5" />
+                <div>
+                  <p style={{ fontSize: '11px', fontWeight: '700', color: '#f59e0b', textTransform: 'uppercase', marginBottom: '2px' }} className="sm:text-xs">Important</p>
+                  <p style={{ fontSize: '11px', color: '#a0a0b8', lineHeight: '1.4' }} className="sm:text-xs">Only send {method} to this address. Credits after 1 confirmation.</p>
+                </div>
+              </div>
+            </div>
+            </>
+          )}
+          </motion.div>
       </div>
 
       {/* History & Info */}

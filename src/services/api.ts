@@ -1475,6 +1475,28 @@ class ApiClient {
       method: "DELETE",
     });
   }
+
+  // Wallet and Topup methods
+  async createTopup(currency: "BTC" | "ETH", amount?: number): Promise<{
+    address: string;
+    currency: string;
+    amount_requested?: number;
+    expires_at: string;
+  }> {
+    const response = await this.request<ApiResponse<{
+      address: string;
+      currency: string;
+      amount_requested?: number;
+      expires_at: string;
+    }>>("/wallets/topup", {
+      method: "POST",
+      body: JSON.stringify({
+        currency,
+        amount
+      }),
+    });
+    return response.data;
+  }
 }
 
 // Create and export API instance
