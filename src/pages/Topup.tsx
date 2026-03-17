@@ -58,8 +58,6 @@ const Topup: React.FC = () => {
       expires_at: string;
     };
   }>({});
-  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'confirmed'>('idle');
-
   const handleCopy = () => {
     const currentAddress = topupData[method]?.address;
     if (currentAddress) {
@@ -69,10 +67,9 @@ const Topup: React.FC = () => {
     }
   };
 
-  // Reset amount and payment status when currency changes, but keep address data
+  // Reset amount when currency changes, but keep address data
   useEffect(() => {
     setAmount('');
-    setPaymentStatus('idle');
   }, [method]);
 
   const generateAddress = async () => {
@@ -92,7 +89,6 @@ const Topup: React.FC = () => {
           expires_at: data.expires_at
         }
       }));
-      setPaymentStatus('pending');
       toast.success('Deposit address generated successfully!');
     } catch (error) {
       console.error('Failed to generate address:', error);
@@ -102,11 +98,7 @@ const Topup: React.FC = () => {
     }
   };
 
-  const simulatePaymentConfirmation = () => {
-    // In a real app, this would be handled by webhook or polling
-    setPaymentStatus('confirmed');
-    toast.success('Payment confirmed! Your wallet has been credited.');
-  };
+
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }} className="lg:grid-cols-[1.5fr_1fr] lg:gap-8">
