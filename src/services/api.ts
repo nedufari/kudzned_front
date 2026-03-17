@@ -1469,6 +1469,12 @@ class ApiClient {
     );
     return response.data;
   }
+
+  async deleteProduct(id: string): Promise<void> {
+    await this.request<ApiResponse<void>>(`/products/${id}`, {
+      method: "DELETE",
+    });
+  }
 }
 
 // Create and export API instance
