@@ -14,7 +14,6 @@ import {
   Loader2,
   Edit,
   Trash2,
-  Eye,
   List
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
