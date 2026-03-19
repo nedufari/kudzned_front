@@ -59,6 +59,7 @@ export interface Product {
   stock: number;
   image_url?: string;
   is_active?: boolean;
+  availability?: string;
   created_at: string;
   updated_at: string;
 }
@@ -627,9 +628,10 @@ class ApiClient {
         price: parseFloat(apiProduct.price) / 100, // Convert from satoshis to dollars
         category: apiProduct.category?.name || "Unknown",
         category_id: apiProduct.category_id,
-        stock: 100, // Default stock since API doesn't provide this
+        stock: apiProduct.availability === "in_stock" ? 100 : 0,
         image_url: apiProduct.images?.[0] || undefined,
         is_active: apiProduct.status === "active",
+        availability: apiProduct.availability,
         created_at: apiProduct.created_at,
         updated_at: apiProduct.updated_at,
       }));
@@ -651,9 +653,10 @@ class ApiClient {
       price: parseFloat(apiProduct.price) / 100,
       category: apiProduct.category?.name || "Unknown",
       category_id: apiProduct.category_id,
-      stock: 100,
+      stock: apiProduct.availability === "in_stock" ? 100 : 0,
       image_url: apiProduct.images?.[0] || undefined,
       is_active: apiProduct.status === "active",
+      availability: apiProduct.availability,
       created_at: apiProduct.created_at,
       updated_at: apiProduct.updated_at,
     };

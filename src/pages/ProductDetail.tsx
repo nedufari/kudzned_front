@@ -78,6 +78,12 @@ const ProductDetail: React.FC = () => {
   const handleAddToCart = async () => {
     if (!product) return;
     
+    // Prevent adding out-of-stock products to cart
+    if (product.stock === 0) {
+      toast.error('This product is out of stock and cannot be added to cart');
+      return;
+    }
+    
     setAddingToCart(true);
     try {
       await api.addToCart(product.id, 1);
@@ -227,6 +233,36 @@ const ProductDetail: React.FC = () => {
                 ) : (
                   <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.1 }}>
                     <ShoppingCart size={80} />
+                  </div>
+                )}
+                
+                {/* Out of Stock Overlay */}
+                {product.stock === 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '24px',
+                    zIndex: 10
+                  }}>
+                    <div style={{
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      padding: '12px 24px',
+                      borderRadius: '12px',
+                      fontWeight: 'bold',
+                      fontSize: '16px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px'
+                    }}>
+                      Out of Stock
+                    </div>
                   </div>
                 )}
              </div>

@@ -115,6 +115,36 @@ const ProductCard = ({ product, onAddToCart }: { product: Product; onAddToCart: 
         }}>
           {product.category}
         </div>
+        
+        {/* Out of Stock Overlay */}
+        {product.stock === 0 && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '16px',
+            zIndex: 10
+          }}>
+            <div style={{
+              backgroundColor: '#ef4444',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
+            }}>
+              Out of Stock
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'clamp(12px, 3vw, 16px)' }}>
@@ -154,11 +184,14 @@ const ProductCard = ({ product, onAddToCart }: { product: Product; onAddToCart: 
              alignItems: 'center', 
              gap: '4px', 
              fontSize: 'clamp(10px, 2.5vw, 12px)', 
-             color: '#6b6b7d', 
-             fontWeight: '700' 
+             color: product.stock === 0 ? '#ef4444' : '#6b6b7d', 
+             fontWeight: '900',
+             backgroundColor: product.stock === 0 ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+             padding: '2px 6px',
+             borderRadius: '6px'
            }}>
               <Globe size={12} />
-              Stock: {product.stock}
+              Stock: {product.stock === 0 ? 'OUT' : product.stock}
            </div>
            <div style={{ 
              display: 'flex', 

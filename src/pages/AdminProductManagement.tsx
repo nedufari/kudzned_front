@@ -120,7 +120,7 @@ const AdminProductManagement: React.FC = () => {
       price: product.price ? product.price.toString() : '',
       tags: product.tags ? product.tags.join(', ') : '',
       status: product.is_active ? 'active' : 'inactive',
-      availability: 'in_stock' // Default value, can be enhanced if needed
+      availability: product.availability || 'in_stock' // Use actual availability from product
     });
   };
 
