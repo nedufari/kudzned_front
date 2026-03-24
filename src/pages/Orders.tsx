@@ -113,7 +113,7 @@ const Orders: React.FC = () => {
 
   // Helper functions
   const formatCurrency = (amount: string) => {
-    return (parseFloat(amount) / 100).toFixed(2); // Convert from satoshis to dollars
+    return (parseFloat(amount) / 100).toFixed(2); // Convert from cents to dollars
   };
 
   const formatDate = (dateString: string) => {

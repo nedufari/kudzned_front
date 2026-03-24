@@ -159,7 +159,7 @@ const MainLayout: React.FC = () => {
     const loadWalletBalance = async () => {
       try {
         const wallet = await api.getWallet();
-        const balance = (parseFloat(wallet.balance) / 100).toFixed(2); // Convert from satoshis to dollars
+        const balance = (parseFloat(wallet.balance) / 100).toFixed(2); // Convert from cents to dollars
         setWalletBalance(balance);
       } catch (error) {
         console.error('Failed to load wallet balance (MainLayout):', error);

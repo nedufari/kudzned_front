@@ -173,7 +173,7 @@ const Dashboard: React.FC = () => {
 
   // Helper function to format currency
   const formatCurrency = (amount: string) => {
-    return (parseFloat(amount) / 100).toFixed(2); // Convert from satoshis to dollars
+    return (parseFloat(amount) / 100).toFixed(2); // Convert from cents to dollars
   };
 
   // Helper function to get transaction icon

@@ -73,8 +73,8 @@ const Topup: React.FC = () => {
   }, [method]);
 
   const generateAddress = async () => {
-    if (!amount || parseInt(amount) < 1000) {
-      toast.error('Please enter a valid amount (minimum 1000 satoshis/wei)');
+    if (!amount || parseInt(amount) < 1) {
+      toast.error('Please enter a valid amount (minimum $1)');
       return;
     }
 
@@ -148,7 +148,7 @@ const Topup: React.FC = () => {
               <div style={{ position: 'relative', flex: 1 }}>
                 <input
                   type="number"
-                  placeholder={`Amount in ${method === 'BTC' ? 'satoshis' : 'wei'} (min 1000)`}
+                  placeholder={`Amount in USD (min $1)`}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   style={{
@@ -163,7 +163,7 @@ const Topup: React.FC = () => {
                     transition: 'all 0.2s'
                   }}
                   className="focus:border-[#00f2ff]"
-                  min="1000"
+                  min="1"
                 />
                 <span style={{
                   position: 'absolute',
@@ -174,12 +174,12 @@ const Topup: React.FC = () => {
                   fontSize: '12px',
                   fontWeight: '700'
                 }}>
-                  {method === 'BTC' ? 'sats' : 'wei'}
+                  USD
                 </span>
               </div>
               <button
                 onClick={generateAddress}
-                disabled={loading || !amount || parseInt(amount) < 1000}
+                disabled={loading || !amount || parseInt(amount) < 1}
                 style={{
                   backgroundColor: loading ? '#6b6b7d' : '#00f2ff',
                   color: loading ? '#a0a0b8' : '#000',
@@ -187,7 +187,7 @@ const Topup: React.FC = () => {
                   borderRadius: '14px',
                   fontWeight: '800',
                   border: 'none',
-                  cursor: loading || !amount || parseInt(amount) < 1000 ? 'not-allowed' : 'pointer',
+                  cursor: loading || !amount || parseInt(amount) < 1 ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
