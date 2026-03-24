@@ -322,7 +322,7 @@ const AdminProductManagement: React.FC = () => {
                   </div>
 
                   <div>
-                    <label style={labelStyle}>Price (Satoshis)</label>
+                    <label style={labelStyle}>Price (USD)</label>
                     <div style={{ position: 'relative' }}>
                       <input 
                         type="number" 
@@ -713,7 +713,7 @@ const AdminProductManagement: React.FC = () => {
                       </p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px' }}>
                         <span style={{ color: '#00f2ff', fontWeight: '700' }}>
-                          {product.price} sats
+                          ${product.price}
                         </span>
                         <span style={{ color: '#6b6b7d' }}>
                           {product.category}
@@ -894,7 +894,7 @@ const AdminProductManagement: React.FC = () => {
                   </div>
 
                   <div>
-                    <label style={labelStyle}>Price (Satoshis)</label>
+                    <label style={labelStyle}>Price (USD)</label>
                     <div style={{ position: 'relative' }}>
                       <input 
                         type="number" 
