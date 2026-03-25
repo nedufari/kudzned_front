@@ -96,13 +96,11 @@ const SectionHeader = ({ title, action, onActionClick }: any) => (
 
 const Dashboard: React.FC = () => {
   const [wallet, setWallet] = useState<Wallet | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalTransactions, setTotalTransactions] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [displayedTransactions, setDisplayedTransactions] = useState<Transaction[]>([]);
   const ITEMS_PER_PAGE = 10;
@@ -137,7 +135,7 @@ const Dashboard: React.FC = () => {
           updated_at: new Date().toISOString(),
           btc_addresses: []
         });
-        setTransactions([]);
+        setDisplayedTransactions([]);
       } finally {
         setLoading(false);
       }
@@ -193,8 +191,6 @@ const Dashboard: React.FC = () => {
         setDisplayedTransactions(transactionsData);
       }
       
-      setTransactions(transactionsData);
-      setTotalTransactions(total);
       setTotalPages(pages);
       setHasNextPage(hasNext);
       setCurrentPage(page);
@@ -203,8 +199,6 @@ const Dashboard: React.FC = () => {
       if (!append) {
         setDisplayedTransactions([]);
       }
-      setTransactions([]);
-      setTotalTransactions(0);
       setTotalPages(1);
       setHasNextPage(false);
     }
