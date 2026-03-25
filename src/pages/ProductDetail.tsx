@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   ShieldCheck, 
-  Zap, 
+  Zap,
   CheckCircle2, 
   MessageSquare, 
   ShoppingCart,
@@ -459,18 +459,18 @@ const ProductDetail: React.FC = () => {
                 disabled={addingToCart || product.stock === 0}
                 style={{ 
                   width: '100%', 
-                  backgroundColor: addingToCart ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)', 
-                  color: addingToCart ? '#666' : 'white', 
+                  backgroundColor: product.stock === 0 ? '#666' : '#00f2ff', 
+                  color: product.stock === 0 ? '#ccc' : '#000', 
                   padding: 'clamp(14px, 3vw, 18px)', 
                   borderRadius: '16px', 
-                  fontWeight: '800', 
+                  fontWeight: '900', 
                   fontSize: 'clamp(14px, 3vw, 16px)', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
                   gap: '12px', 
-                  marginBottom: '12px', 
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  marginBottom: 'clamp(12px, 3vw, 16px)',
+                  border: 'none',
                   cursor: (addingToCart || product.stock === 0) ? 'not-allowed' : 'pointer',
                   opacity: product.stock === 0 ? 0.5 : 1
                 }}
@@ -486,29 +486,6 @@ const ProductDetail: React.FC = () => {
                     {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                   </>
                 )}
-             </button>
-             <button 
-                onClick={() => navigate('/checkout')}
-                disabled={product.stock === 0}
-                style={{ 
-                  width: '100%', 
-                  backgroundColor: product.stock === 0 ? '#666' : '#00f2ff', 
-                  color: product.stock === 0 ? '#ccc' : '#000', 
-                  padding: 'clamp(14px, 3vw, 18px)', 
-                  borderRadius: '16px', 
-                  fontWeight: '900', 
-                  fontSize: 'clamp(14px, 3vw, 16px)', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  gap: '12px', 
-                  marginBottom: 'clamp(12px, 3vw, 16px)',
-                  border: 'none',
-                  cursor: product.stock === 0 ? 'not-allowed' : 'pointer'
-                }}
-             >
-                <Zap size={20} fill="currentColor" />
-                {product.stock === 0 ? 'Unavailable' : 'Buy Now'}
              </button>
              <p style={{ 
                textAlign: 'center', 

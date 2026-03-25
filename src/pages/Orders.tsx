@@ -6,8 +6,6 @@ import {
   Clock, 
   XCircle,
   ArrowRight,
-  Calendar,
-  Hash,
   Loader2,
   RefreshCw,
   ShoppingBag
@@ -185,7 +183,7 @@ const Orders: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'end', gap: '16px' }}>
         <div>
-          <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>Purchase History</h3>
+          <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>Purchased Order History</h3>
           <p style={{ color: '#a0a0b8', fontSize: '15px' }}>Track your orders, view credentials, and check transaction status.</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -278,99 +276,97 @@ const Orders: React.FC = () => {
 
       {/* Orders List */}
       {orders.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <h4 style={{ fontSize: '18px', fontWeight: '800' }}>Your Orders ({orders.length})</h4>
-          {orders.map((order) => {
-            const statusColor = getStatusColor(order.status);
-            return (
-              <div
-                key={order.id}
-                onClick={() => navigate(`/orders/${order.id}`)}
-                style={{
-                  backgroundColor: '#0d0d12',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                  borderRadius: '20px',
-                  padding: '20px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '16px',
-                  transition: 'all 0.2s'
-                }}
-                className="hover:bg-[rgba(255,255,255,0.02)] hover:border-[rgba(255,255,255,0.1)]"
-              >
-                {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '12px' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#6b6b7d', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>
-                      <Hash size={12} />
-                      Order ID
-                    </div>
-                    <p style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'monospace', color: '#a0a0b8', wordBreak: 'break-all' }}>
-                      {order.id}
-                    </p>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: statusColor, fontSize: '12px', fontWeight: '900', backgroundColor: `${statusColor}15`, padding: '6px 12px', borderRadius: '10px', whiteSpace: 'nowrap', textTransform: 'capitalize' }}>
-                    {getStatusIcon(order.status)}
-                    {order.status}
-                  </div>
-                </div>
-
-                {/* Product Name */}
-                <div>
-                  <div style={{ color: '#6b6b7d', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>
-                    Product
-                  </div>
-                  <h4 style={{ fontSize: '16px', fontWeight: '800', lineHeight: '1.3' }}>
-                    {getOrderDescription(order)}
-                  </h4>
-                </div>
-
-                {/* Date & Amount */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#6b6b7d', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>
-                      <Calendar size={12} />
-                      Date
-                    </div>
-                    <p style={{ fontSize: '14px', fontWeight: '600', color: '#a0a0b8' }}>
-                      {formatDate(order.created_at)}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ color: '#6b6b7d', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>
-                      Amount
-                    </div>
-                    <p style={{ fontSize: '18px', fontWeight: '900', color: '#10b981' }}>
-                      ${formatCurrency(order.total_amount)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* View Button */}
-                <button 
-                  style={{ 
-                    width: '100%',
-                    backgroundColor: 'rgba(0, 242, 255, 0.05)', 
-                    color: '#00f2ff', 
-                    padding: '12px', 
-                    borderRadius: '12px', 
-                    fontSize: '14px', 
-                    fontWeight: '800', 
-                    border: '1px solid rgba(0, 242, 255, 0.1)', 
+        <div style={{ 
+          backgroundColor: '#0d0d12', 
+          border: '1px solid rgba(255,255,255,0.05)', 
+          borderRadius: '24px', 
+          padding: '24px' 
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h4 style={{ fontSize: '20px', fontWeight: '700' }}>Your Orders ({orders.length})</h4>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {orders.map((order) => {
+              const statusColor = getStatusColor(order.status);
+              return (
+                <div
+                  key={order.id}
+                  onClick={() => navigate(`/orders/${order.id}`)}
+                  style={{
                     display: 'flex', 
                     alignItems: 'center', 
-                    justifyContent: 'center',
-                    gap: '8px',
-                    marginTop: '4px'
+                    gap: 'clamp(12px, 3vw, 16px)', 
+                    padding: 'clamp(12px, 3vw, 16px)', 
+                    borderRadius: '16px', 
+                    backgroundColor: 'rgba(255,255,255,0.02)', 
+                    border: '1px solid rgba(255,255,255,0.03)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    minWidth: 0
                   }}
+                  className="hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.08)]"
                 >
-                  View Details
-                  <ArrowRight size={16} />
-                </button>
-              </div>
-            );
-          })}
+                  {/* Status Icon */}
+                  <div style={{ 
+                    width: 'clamp(40px, 10vw, 48px)', 
+                    height: 'clamp(40px, 10vw, 48px)', 
+                    borderRadius: '12px', 
+                    backgroundColor: `${statusColor}15`, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    color: statusColor,
+                    flexShrink: 0
+                  }}>
+                    {getStatusIcon(order.status)}
+                  </div>
+                  
+                  {/* Order Info */}
+                  <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                    <h4 style={{ 
+                      fontSize: 'clamp(14px, 3.5vw, 16px)', 
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      marginBottom: '4px'
+                    }}>
+                      {getOrderDescription(order)}
+                    </h4>
+                    <p style={{ 
+                      fontSize: 'clamp(11px, 3vw, 12px)', 
+                      color: '#a0a0b8',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      {formatDate(order.created_at)} • Order #{order.id.slice(0, 8)}
+                    </p>
+                  </div>
+                  
+                  {/* Amount & Status */}
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <p style={{ 
+                      fontSize: 'clamp(14px, 3.5vw, 16px)', 
+                      fontWeight: '700',
+                      color: '#10b981'
+                    }}>
+                      ${formatCurrency(order.total_amount)}
+                    </p>
+                    <p style={{ 
+                      fontSize: 'clamp(11px, 3vw, 12px)', 
+                      color: statusColor, 
+                      fontWeight: '600',
+                      textTransform: 'capitalize'
+                    }}>
+                      {order.status}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

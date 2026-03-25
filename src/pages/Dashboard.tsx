@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  TrendingUp, 
+  TrendingUp,
   ShoppingBag, 
   ArrowUpRight, 
-  ExternalLink,
   CreditCard,
   Loader2,
   RefreshCw,
   ArrowDownLeft,
   ArrowUpLeft,
-  Clock
+  Clock,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { api } from '../services/api';
@@ -93,10 +92,20 @@ const SectionHeader = ({ title, action, onActionClick }: any) => (
   </div>
 );
 
+
+
 const Dashboard: React.FC = () => {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [displayedTransactions, setDisplayedTransactions] = useState<Transaction[]>([]);
+  const ITEMS_PER_PAGE = 10;
 
   // Load wallet and transaction data
   useEffect(() => {
@@ -110,15 +119,7 @@ const Dashboard: React.FC = () => {
         setWallet(walletData);
         
         // Load transactions separately to avoid blocking wallet display
-        try {
-          const transactionsData = await api.getTransactions({ page: 1, limit: 5 });
-          console.log('Transactions loaded:', transactionsData);
-          setTransactions(transactionsData || []);
-        } catch (transactionError) {
-          console.error('Failed to load transactions (non-blocking):', transactionError);
-          // Don't show error toast for transactions, just set empty array
-          setTransactions([]);
-        }
+        await loadTransactions(1);
         
       } catch (error) {
         console.error('Failed to load wallet data:', error);
@@ -145,6 +146,70 @@ const Dashboard: React.FC = () => {
     loadDashboardData();
   }, []);
 
+  // Load transactions with pagination
+  const loadTransactions = async (page: number, append: boolean = false) => {
+    try {
+      const response = await api.getTransactions({ 
+        page: page, 
+        limit: ITEMS_PER_PAGE 
+      });
+      
+      // Handle the API response structure
+      let transactionsData: Transaction[] = [];
+      let total = 0;
+      let pages = 1;
+      let hasNext = false;
+      
+      if (Array.isArray(response)) {
+        // Direct array response (fallback)
+        transactionsData = response as Transaction[];
+        total = response.length;
+        hasNext = false;
+      } else if (response && typeof response === 'object') {
+        // Standard API response with data and metadata
+        const apiResponse = response as { 
+          data?: Transaction[]; 
+          metadata?: { 
+            total?: number; 
+            pages?: number; 
+            hasNext?: boolean;
+            page?: number;
+          } 
+        };
+        
+        if (apiResponse.data && Array.isArray(apiResponse.data)) {
+          transactionsData = apiResponse.data;
+          total = apiResponse.metadata?.total || apiResponse.data.length;
+          pages = apiResponse.metadata?.pages || 1;
+          hasNext = apiResponse.metadata?.hasNext || false;
+        }
+      }
+      
+      if (append) {
+        // Append new transactions to existing ones
+        setDisplayedTransactions(prev => [...prev, ...transactionsData]);
+      } else {
+        // Replace existing transactions
+        setDisplayedTransactions(transactionsData);
+      }
+      
+      setTransactions(transactionsData);
+      setTotalTransactions(total);
+      setTotalPages(pages);
+      setHasNextPage(hasNext);
+      setCurrentPage(page);
+    } catch (transactionError) {
+      console.error('Failed to load transactions:', transactionError);
+      if (!append) {
+        setDisplayedTransactions([]);
+      }
+      setTransactions([]);
+      setTotalTransactions(0);
+      setTotalPages(1);
+      setHasNextPage(false);
+    }
+  };
+
   // Refresh data
   const refreshData = async () => {
     setLoading(true);
@@ -153,14 +218,8 @@ const Dashboard: React.FC = () => {
       const walletData = await api.getWallet();
       setWallet(walletData);
       
-      // Load transactions separately
-      try {
-        const transactionsData = await api.getTransactions({ page: 1, limit: 5 });
-        setTransactions(transactionsData || []);
-      } catch (transactionError) {
-        console.error('Failed to refresh transactions (non-blocking):', transactionError);
-        setTransactions([]);
-      }
+      // Load transactions from page 1
+      await loadTransactions(1);
       
       toast.success('Dashboard data refreshed!');
     } catch (error) {
@@ -168,6 +227,14 @@ const Dashboard: React.FC = () => {
       toast.error('Failed to refresh wallet data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Load more transactions (View More)
+  const loadMoreTransactions = async () => {
+    const nextPage = currentPage + 1;
+    if (nextPage <= totalPages) {
+      await loadTransactions(nextPage, true);
     }
   };
 
@@ -212,9 +279,8 @@ Date: ${new Date(transaction.created_at).toLocaleString()}`);
 
   // Navigate to full transaction list
   const viewAllTransactions = () => {
-    // In a real app, you'd navigate to a transactions page
-    // For now, just show a toast
-    toast.success('Navigate to full transaction history (feature coming soon)');
+    // Load more transactions on the dashboard
+    loadMoreTransactions();
   };
 
   // Show loading state
@@ -337,92 +403,132 @@ Date: ${new Date(transaction.created_at).toLocaleString()}`);
             color="#10b981" 
           />
         </motion.div>
-        <motion.div variants={item}>
-          <StatCard 
-            label="Total Withdrawn" 
-            value={`$${formatCurrency(wallet.total_withdrawn)}`} 
-            icon={ArrowUpLeft} 
-            color="#f59e0b" 
-          />
-        </motion.div>
+
       </div>
 
-      <div className="main-grid">
+      <div style={{ width: '100%' }}>
         {/* Recent Activity */}
-        <motion.div variants={item} style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '24px' }}>
-          <SectionHeader title="Recent Transactions" action="View All" onActionClick={viewAllTransactions} />
+        <motion.div variants={item} style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '24px', width: '100%' }}>
+          <SectionHeader 
+            title="Recent Transactions" 
+            action={hasNextPage ? "View All" : undefined} 
+            onActionClick={hasNextPage ? viewAllTransactions : undefined} 
+          />
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {transactions.length > 0 ? (
-              transactions.map((transaction) => {
-                const TransactionIcon = getTransactionIcon(transaction.type);
-                const statusColor = '#a0a0b8'; // Default color for transaction status
-                const amount = formatCurrency(transaction.amount);
-                const isPositive = ['deposit', 'refund'].includes(transaction.type);
-                
-                return (
-                  <div 
-                    key={transaction.id} 
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '16px', 
-                      padding: '16px', 
-                      borderRadius: '16px', 
-                      backgroundColor: 'rgba(255,255,255,0.02)', 
-                      border: '1px solid rgba(255,255,255,0.03)',
+            {displayedTransactions.length > 0 ? (
+              <>
+                {displayedTransactions.map((transaction) => {
+                  const TransactionIcon = getTransactionIcon(transaction.type);
+                  const statusColor = '#a0a0b8'; // Default color for transaction status
+                  const amount = formatCurrency(transaction.amount);
+                  const isPositive = ['deposit', 'refund'].includes(transaction.type);
+                  
+                  return (
+                    <div 
+                      key={transaction.id} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 'clamp(12px, 3vw, 16px)', 
+                        padding: 'clamp(12px, 3vw, 16px)', 
+                        borderRadius: '16px', 
+                        backgroundColor: 'rgba(255,255,255,0.02)', 
+                        border: '1px solid rgba(255,255,255,0.03)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        minWidth: 0
+                      }}
+                      className="hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.08)]"
+                      onClick={() => viewTransaction(transaction.id)}
+                    >
+                      <div style={{ 
+                        width: 'clamp(40px, 10vw, 48px)', 
+                        height: 'clamp(40px, 10vw, 48px)', 
+                        borderRadius: '12px', 
+                        backgroundColor: '#1a1a24', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        color: isPositive ? '#10b981' : '#f59e0b',
+                        flexShrink: 0
+                      }}>
+                        <TransactionIcon size={20} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                        <h4 style={{ 
+                          fontSize: 'clamp(14px, 3.5vw, 16px)', 
+                          fontWeight: '600', 
+                          textTransform: 'capitalize',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}>
+                          {transaction.description || `${transaction.type} Transaction`}
+                        </h4>
+                        <p style={{ 
+                          fontSize: 'clamp(11px, 3vw, 12px)', 
+                          color: '#a0a0b8',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}>
+                          {transaction.reference ? `Ref: ${transaction.reference} • ` : ''}
+                          {new Date(transaction.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <p style={{ 
+                          fontSize: 'clamp(14px, 3.5vw, 16px)', 
+                          fontWeight: '700',
+                          color: isPositive ? '#10b981' : '#f59e0b'
+                        }}>
+                          {isPositive ? '+' : '-'}${amount}
+                        </p>
+                        <p style={{ 
+                          fontSize: 'clamp(11px, 3vw, 12px)', 
+                          color: statusColor, 
+                          fontWeight: '600',
+                          textTransform: 'capitalize'
+                        }}>
+                          {transaction.status}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+                {hasNextPage && (
+                  <button
+                    onClick={loadMoreTransactions}
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#16161e',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                      borderRadius: '12px',
+                      padding: '14px',
+                      color: '#00f2ff',
+                      fontSize: '14px',
+                      fontWeight: '600',
                       cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      marginTop: '8px',
                       transition: 'all 0.2s'
                     }}
-                    className="hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.08)]"
-                    onClick={() => viewTransaction(transaction.id)}
+                    className="hover:bg-[#1f1f2a]"
                   >
-                    <div style={{ 
-                      width: '48px', 
-                      height: '48px', 
-                      borderRadius: '12px', 
-                      backgroundColor: '#1a1a24', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      color: isPositive ? '#10b981' : '#f59e0b' 
-                    }}>
-                      <TransactionIcon size={20} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ fontSize: '16px', fontWeight: '600', textTransform: 'capitalize' }}>
-                        {transaction.description || `${transaction.type} Transaction`}
-                      </h4>
-                      <p style={{ fontSize: '12px', color: '#a0a0b8' }}>
-                        {transaction.reference ? `Ref: ${transaction.reference} • ` : ''}
-                        {new Date(transaction.created_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={{ 
-                        fontSize: '16px', 
-                        fontWeight: '700',
-                        color: isPositive ? '#10b981' : '#f59e0b'
-                      }}>
-                        {isPositive ? '+' : '-'}${amount}
-                      </p>
-                      <p style={{ 
-                        fontSize: '12px', 
-                        color: statusColor, 
-                        fontWeight: '600',
-                        textTransform: 'capitalize'
-                      }}>
-                        {transaction.status}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })
+                    View More
+                    <ArrowDownLeft size={16} style={{ transform: 'rotate(-45deg)' }} />
+                  </button>
+                )}
+              </>
             ) : (
               <div style={{ 
                 textAlign: 'center', 
@@ -441,28 +547,7 @@ Date: ${new Date(transaction.created_at).toLocaleString()}`);
           </div>
         </motion.div>
 
-        {/* Announcements / Quick Actions */}
-        <motion.div variants={item} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div style={{ backgroundColor: 'linear-gradient(135deg, #00f2ff, #0099ff)', borderRadius: '24px', padding: '24px', color: 'white', position: 'relative', overflow: 'hidden' }} className="bg-gradient-to-br from-[#00f2ff] to-[#0099ff]">
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>Join the VIP Club</h3>
-              <p style={{ fontSize: '14px', opacity: 0.9, marginBottom: '20px' }}>Get exclusive access to high-balance logs before they hit the general shop.</p>
-              <button style={{ backgroundColor: 'white', color: '#00f2ff', padding: '10px 20px', borderRadius: '12px', fontWeight: '700', fontSize: '14px' }}>
-                Learn More
-              </button>
-            </div>
-            <TrendingUp size={120} style={{ position: 'absolute', bottom: '-20px', right: '-20px', opacity: 0.2, rotate: '-15deg' }} />
-          </div>
 
-          <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '24px' }}>
-            <SectionHeader title="Support" />
-            <p style={{ fontSize: '14px', color: '#a0a0b8', marginBottom: '20px' }}>Need help with an order? Our team is available 24/7 via Telegram.</p>
-            <button style={{ width: '100%', backgroundColor: '#16161e', border: '1px solid rgba(255,255,255,0.05)', padding: '12px', borderRadius: '12px', color: 'white', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <ExternalLink size={18} />
-              Open Tickets
-            </button>
-          </div>
-        </motion.div>
       </div>
     </motion.div>
   );

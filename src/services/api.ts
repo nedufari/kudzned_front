@@ -900,7 +900,7 @@ class ApiClient {
   async getTransactions(params?: {
     page?: number;
     limit?: number;
-  }): Promise<any[]> {
+  }): Promise<ApiResponse<any[]> | any[]> {
     try {
       const queryParams = new URLSearchParams();
       if (params?.page) queryParams.append("page", params.page.toString());
@@ -912,7 +912,8 @@ class ApiClient {
         : "/wallets/transactions";
 
       const response = await this.request<ApiResponse<any[]>>(endpoint);
-      return response.data || [];
+      // Return the full response so we can access metadata
+      return response;
     } catch (error) {
       console.error("Error fetching transactions:", error);
       return [];
