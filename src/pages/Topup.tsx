@@ -13,9 +13,9 @@ import { motion } from 'framer-motion';
 import { api } from '../services/api';
 import { toast } from '../utils/toast';
 
-const CryptoOption = ({ name, symbol, icon: Icon, active, onClick }: any) => (
+const CryptoOption = ({ name, symbol, icon: Icon, active, onClick, disabled }: any) => (
   <button
-    onClick={onClick}
+    onClick={disabled ? undefined : onClick}
     style={{
       flex: 1,
       display: 'flex',
@@ -24,19 +24,21 @@ const CryptoOption = ({ name, symbol, icon: Icon, active, onClick }: any) => (
       gap: '12px',
       padding: '24px',
       borderRadius: '24px',
-      backgroundColor: active ? '#00f2ff' : '#0d0d12',
-      color: active ? '#000' : 'white',
-      border: active ? 'none' : '1px solid rgba(255,255,255,0.05)',
+      backgroundColor: disabled ? 'rgba(255,255,255,0.02)' : (active ? '#00f2ff' : '#0d0d12'),
+      color: disabled ? '#4b4b5e' : (active ? '#000' : 'white'),
+      border: disabled ? '1px solid rgba(255,255,255,0.02)' : (active ? 'none' : '1px solid rgba(255,255,255,0.05)'),
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      cursor: 'pointer'
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      opacity: disabled ? 0.5 : 1
     }}
   >
-    <div style={{ backgroundColor: active ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '16px' }}>
+    <div style={{ backgroundColor: active ? 'rgba(0,0,0,0.1)' : (disabled ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)'), padding: '16px', borderRadius: '16px' }}>
       <Icon size={32} />
     </div>
     <div style={{ textAlign: 'center' }}>
       <p style={{ fontWeight: '800', fontSize: '18px' }}>{name}</p>
-      <p style={{ fontSize: '12px', opacity: active ? 0.7 : 0.5 }}>{symbol}</p>
+      <p style={{ fontSize: '12px', opacity: active ? 0.7 : (disabled ? 0.4 : 0.5) }}>{symbol}</p>
+      {disabled && <p style={{ fontSize: '10px', color: '#ff4b4b', marginTop: '4px' }}>Coming Soon</p>}
     </div>
   </button>
 );
@@ -119,7 +121,8 @@ const Topup: React.FC = () => {
               symbol="ETH" 
               icon={({ size }: any) => <span style={{ fontSize: size, fontWeight: 'bold' }}>Ξ</span>} 
               active={method === 'ETH'} 
-              onClick={() => setMethod('ETH')} 
+              onClick={() => setMethod('ETH')}
+              disabled={true}
             />
           </div>
         </section>

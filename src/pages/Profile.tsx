@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   User, 
   Mail, 
-  Wallet, 
   ShieldCheck, 
   Lock, 
   Camera, 
@@ -15,7 +14,6 @@ import { api } from '../services/api';
 
 const Profile: React.FC = () => {
   const [name, setName] = useState('Loading...');
-  const [address, setAddress] = useState('bc1qxy2kg2ryyxpx4lhuv067z8483m3m3j');
   const [email, setEmail] = useState('Loading...');
 
   // Load profile data immediately when component mounts
@@ -110,14 +108,6 @@ const Profile: React.FC = () => {
             <p style={{ fontSize: '11px', color: '#6b6b7d' }} className="sm:text-xs">Verified email cannot be changed. Contact support for help.</p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '12px', fontWeight: '800', color: '#6b6b7d', textTransform: 'uppercase', letterSpacing: '0.5px' }} className="sm:text-xs">Default BTC Wallet Address</label>
-            <div style={{ backgroundColor: '#16161e', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', padding: '14px', display: 'flex', alignItems: 'center', gap: '10px' }} className="sm:p-4 sm:gap-3">
-              <Wallet size={16} color="#f59e0b" className="sm:w-5 sm:h-5" />
-              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} style={{ background: 'none', border: 'none', outline: 'none', color: 'white', width: '100%', fontSize: '14px', fontFamily: 'monospace' }} className="sm:text-base" />
-            </div>
-          </div>
-
           <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }} className="sm:flex-row sm:gap-4">
             <button style={{ flex: 1, backgroundColor: '#00f2ff', color: '#000', padding: '14px', borderRadius: '14px', fontWeight: '900', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} className="sm:text-base sm:p-4">
                <Save size={18} className="sm:w-5 sm:h-5" />
@@ -136,9 +126,25 @@ const Profile: React.FC = () => {
                 <p style={{ fontSize: '14px', fontWeight: '800' }} className="sm:text-sm">Deactivate Account</p>
                 <p style={{ fontSize: '12px', color: '#a0a0b8' }} className="sm:text-xs">This will instantly disable your access to SONNET.</p>
               </div>
-              <button style={{ backgroundColor: '#ff4b4b', color: 'white', padding: '10px 16px', borderRadius: '10px', fontWeight: '800', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }} className="sm:text-sm">
+              <button 
+                disabled
+                style={{ 
+                  backgroundColor: 'rgba(255,75,75,0.3)', 
+                  color: 'rgba(255,255,255,0.5)', 
+                  padding: '10px 16px', 
+                  borderRadius: '10px', 
+                  fontWeight: '800', 
+                  fontSize: '13px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px',
+                  cursor: 'not-allowed',
+                  border: '1px solid rgba(255,75,75,0.2)'
+                }} 
+                className="sm:text-sm"
+              >
                  <Trash2 size={16} className="sm:w-4 sm:h-4" />
-                 Terminate
+                 Terminate (Disabled)
               </button>
            </div>
         </div>
