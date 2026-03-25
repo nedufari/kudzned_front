@@ -154,14 +154,12 @@ const Dashboard: React.FC = () => {
       
       // Handle the API response structure
       let transactionsData: Transaction[] = [];
-      let total = 0;
       let pages = 1;
       let hasNext = false;
       
       if (Array.isArray(response)) {
         // Direct array response (fallback)
         transactionsData = response as Transaction[];
-        total = response.length;
         hasNext = false;
       } else if (response && typeof response === 'object') {
         // Standard API response with data and metadata
@@ -177,7 +175,6 @@ const Dashboard: React.FC = () => {
         
         if (apiResponse.data && Array.isArray(apiResponse.data)) {
           transactionsData = apiResponse.data;
-          total = apiResponse.metadata?.total || apiResponse.data.length;
           pages = apiResponse.metadata?.pages || 1;
           hasNext = apiResponse.metadata?.hasNext || false;
         }
