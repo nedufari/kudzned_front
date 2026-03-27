@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 const TelegramButton = () => {
   return (
     <motion.a
-      href="https://t.me/sonnet"
+      href="https://t.me/Sonnetshop"
       target="_blank"
       rel="noopener noreferrer"
       initial={{ scale: 0, opacity: 0 }}
@@ -40,7 +40,7 @@ const TelegramButton = () => {
         textDecoration: 'none',
         border: '2px solid rgba(255,255,255,0.1)'
       }}
-      title="Join our Telegram"
+      title="Join our Telegram @Sonnetshop"
     >
       <motion.div
         animate={{
