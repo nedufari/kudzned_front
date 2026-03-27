@@ -23,6 +23,7 @@ interface Product {
   category: string;
   stock: number;
   image_url?: string;
+  is_active?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -405,13 +406,14 @@ const Shop: React.FC = () => {
     }
   };
 
-  // Simple local filtering
+  // Simple local filtering - only show active products
   const filteredProducts = products.filter(product => {
+    const isActive = product.is_active !== false; // Default to true if not specified
     const matchesCategory = activeCategory === 'All Products' || product.category === activeCategory;
     const matchesSearch = !searchTerm || 
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return isActive && matchesCategory && matchesSearch;
   });
 
   const categoryOptions = ['All Products', ...categories.map(cat => cat.name)];
