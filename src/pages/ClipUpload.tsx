@@ -30,8 +30,7 @@ const ClipUpload: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [availableTags] = useState([
-    'chase', 'wells-fargo', 'bank-of-america', 'paypal', 'cashout', 'proof', 
-    'live', 'success', 'high-balance', 'wire-transfer', 'crypto', 'bitcoin'
+    'payout', 'success', 'evidence', 'live', 'high-yield', 'wire', 'crypto', 'bitcoin'
   ]);
 
   // Load products on component mount
@@ -236,9 +235,9 @@ const ClipUpload: React.FC = () => {
       </button>
 
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <h2 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '8px' }}>Upload Cashout Proof</h2>
+        <h2 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '8px' }}>Upload Payout Success</h2>
         <p style={{ color: '#a0a0b8', fontSize: '16px' }}>
-          Share your successful cashout to inspire and educate the community
+          Share your successful payout to inspire and educate the community
         </p>
       </div>
 
@@ -247,7 +246,7 @@ const ClipUpload: React.FC = () => {
         <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
           <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>Video File</h3>
           <p style={{ fontSize: '14px', color: '#6b6b7d', marginBottom: '16px' }}>
-            Upload your cashout proof video (MP4, MOV, AVI • Max 100MB)
+            Upload your payout success video (MP4, MOV, AVI • Max 100MB)
           </p>
           
           {!previewUrl ? (
@@ -374,7 +373,7 @@ const ClipUpload: React.FC = () => {
             type="text"
             value={formData.title}
             onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-            placeholder="e.g., Chase High-Balance Cashout Proof"
+            placeholder="e.g., High-Yield Asset Payout Success"
             required
             style={{
               width: '100%',
@@ -389,9 +388,9 @@ const ClipUpload: React.FC = () => {
           />
         </div>
 
-        {/* Cashout Amount */}
+        {/* Payout Amount */}
         <div style={{ backgroundColor: '#0d0d12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>Cashout Amount</h3>
+          <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>Payout Amount</h3>
           <div style={{ position: 'relative' }}>
             <DollarSign size={20} color="#6b6b7d" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
@@ -415,7 +414,7 @@ const ClipUpload: React.FC = () => {
             />
           </div>
           <p style={{ fontSize: '12px', color: '#6b6b7d', marginTop: '8px' }}>
-            Enter the amount you successfully cashed out
+            Enter the amount you successfully received
           </p>
         </div>
 
@@ -466,7 +465,7 @@ const ClipUpload: React.FC = () => {
             }}
           />
           <p style={{ fontSize: '12px', color: '#6b6b7d', marginTop: '8px' }}>
-            Specify the bank, platform, or service used
+            Specify the bank or service used
           </p>
         </div>
 

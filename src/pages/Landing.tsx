@@ -251,14 +251,14 @@ const Footer = () => {
             <h1 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '1px' }}>SONNET</h1>
           </div>
           <p style={{ color: '#a0a0b8', fontSize: '15px', lineHeight: '1.6', maxWidth: '300px' }}>
-            The world's most trusted marketplace for premium digital assets, bank logs, and secure fulfillment. Secure, fast, and anonymous.
+            The world's most trusted marketplace for premium digital assets and secure fulfillment. Secure, fast, and anonymous.
           </p>
         </div>
 
         <div>
           <h4 style={{ fontWeight: '800', marginBottom: '24px', fontSize: '14px', textTransform: 'uppercase', color: '#6b6b7d', letterSpacing: '1px' }}>Product</h4>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {['Marketplace', 'Bank Logs', 'Fullz/SSN', 'Methods'].map(item => (
+            {['Marketplace', 'Premium Accounts', 'Digital Tools', 'Exclusive Access'].map(item => (
               <li key={item}><a href="#" style={{ color: '#a0a0b8', fontSize: '15px' }} className="hover:text-[#00f2ff]">{item}</a></li>
             ))}
           </ul>
@@ -436,7 +436,7 @@ const Landing = () => {
               margin: '0 auto 48px auto' 
             }}
           >
-            Experience the next generation of digital trading. Access high-balance logs, secure wires, and global assets delivered instantly.
+            Experience the next generation of digital trading. Access premium accounts, secure services, and global assets delivered instantly.
           </motion.p>
 
           <motion.div 
@@ -568,7 +568,7 @@ const Landing = () => {
           <FeatureCard 
             icon={Globe} 
             title="Global Market Reach" 
-            description="Access banking logs and digital assets from over 85+ countries including USA, UK, Canada, and EU."
+            description="Access premium digital assets and exclusive services from over 85+ countries including USA, UK, Canada, and EU."
             delay={0.2}
           />
           <FeatureCard 

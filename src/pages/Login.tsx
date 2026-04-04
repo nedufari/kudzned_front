@@ -73,7 +73,7 @@ const Login: React.FC = () => {
             >
               The World's <span style={{ color: '#00f2ff' }}>Premium</span> Digital Goods Store.
             </motion.h2>
-            <p style={{ fontSize: '18px', color: '#a0a0b8', marginBottom: '48px' }}>Access exclusive bank logs, transfers, and digital assets with military-grade security.</p>
+            <p style={{ fontSize: '18px', color: '#a0a0b8', marginBottom: '48px' }}>Access exclusive premium accounts and digital assets with advanced security.</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {[

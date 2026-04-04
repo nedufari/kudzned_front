@@ -328,8 +328,8 @@ const Shop: React.FC = () => {
         // Fallback to sample data
         setProducts([]);
         setCategories([
-          { id: '1', name: 'BankLogs', slug: 'bank-logs', description: 'Bank logs', is_active: true, sort_order: 1, created_at: '', updated_at: '' },
-          { id: '2', name: 'Methods', slug: 'methods', description: 'Premium Methods', is_active: true, sort_order: 2, created_at: '', updated_at: '' }
+          { id: '1', name: 'Digital Goods', slug: 'digital-goods', description: 'Premium digital goods', is_active: true, sort_order: 1, created_at: '', updated_at: '' },
+          { id: '2', name: 'Software', slug: 'software', description: 'Premium Software', is_active: true, sort_order: 2, created_at: '', updated_at: '' }
         ]);
       } finally {
         setLoading(false);
